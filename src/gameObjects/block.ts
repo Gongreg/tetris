@@ -16,7 +16,7 @@ class Block {
 
     fall()
     {
-        this.y--;
+        this.y++;
     }
 
     move(side: number)

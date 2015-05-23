@@ -9,7 +9,7 @@ var Block = (function () {
         this.sprite = sprite;
     }
     Block.prototype.fall = function () {
-        this.y--;
+        this.y++;
     };
     Block.prototype.move = function (side) {
         this.x += side;
