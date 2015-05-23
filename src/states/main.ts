@@ -60,9 +60,9 @@ class MainState extends Kiwi.State
 
         if (this.leftKey.isDown && this.board.canMove(this.currentShape.getBlocks(), -1) && !this.pressed) {
 
-            this.board.setBlocks(this.currentShape.getBlocks(), false);
+            this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Empty);
             this.currentShape.move(-1);
-            this.board.setBlocks(this.currentShape.getBlocks(), true);
+            this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Taken);
 
             this.pressed = true;
             this.moveTimer.start();
@@ -71,16 +71,28 @@ class MainState extends Kiwi.State
 
         if (this.rightKey.isDown && this.board.canMove(this.currentShape.getBlocks(), 1) && !this.pressed) {
 
-            this.board.setBlocks(this.currentShape.getBlocks(), false);
+            this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Empty);
             this.currentShape.move(1);
-            this.board.setBlocks(this.currentShape.getBlocks(), true);
+            this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Taken);
 
             this.pressed = true;
             this.moveTimer.start();
 
         }
 
+        if (this.downKey.isDown) {
+            //this.dropTimer.clear();
+            this.dropTimer.delay = 0.001;
+            //this.dropTimer = this.game.time.clock.createTimer('fall', 0.2, 0);
+           // this.dropTimer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP, this.dropDown, this);
+
+        } else {
+            this.dropTimer.delay = 0.5;
+        }
+
         this.dropTimer.start();
+
+
     }
 
     resetControls()
@@ -92,24 +104,46 @@ class MainState extends Kiwi.State
     dropDown()
     {
         if (this.board.canFall(this.currentShape.getBlocks())) {
-            this.board.setBlocks(this.currentShape.getBlocks(), false);
+            this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Empty);
             this.currentShape.fall();
-            this.board.setBlocks(this.currentShape.getBlocks(), true);
+            this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Taken);
             return;
         }
 
+        //try to clear the row
+
+        this.createEmptyShape(this.randomShape(), 3, 0);
+
+        if (this.board.canCreateShape(this.currentShape.getBlocks())) {
+
+            this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Taken);
+
+            this.addChild(this.currentShape.getGameObject());
+            //this.currentShape.setVisible();
+
+            return;
+        }
+
+        //console.log('gg');
         //if unable to create new shape gg
-        this.createNewShape();
     }
 
-
-    createNewShape()
+    randomShape()
     {
-        var shapeName = Math.floor(Math.random() * 7);
+        return 'Shape'+ this.shapes[Math.floor(Math.random() * 7)];
+    }
 
-        this.currentShape = new Shapes['Shape'+ this.shapes[shapeName]](this, 3, 0);
+    createEmptyShape(shapeName: string, x: number, y: number)
+    {
+        this.currentShape = new Shapes[this.randomShape()](this, 3, -2);
+    }
 
-        this.board.setBlocks(this.currentShape.getBlocks(), true);
+    createNewShape(shapeName: string, x: number, y: number)
+    {
+
+        this.currentShape = new Shapes[this.randomShape()](this, 3, -2);
+
+        this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Taken);
 
         this.addChild(this.currentShape.getGameObject());
     }
@@ -128,15 +162,15 @@ class MainState extends Kiwi.State
         this.moveTimer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP, this.resetControls, this);
 
         //board
-        this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.borders, 0, 0));
-        this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.board, 5, 5));
+        this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.borders, 0, 80));
+        this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.board, 5, 85));
         this.board = new Board();
 
         //drop the first shape
 
-        this.createNewShape();
+        this.createNewShape(this.randomShape(), 3, -2);
 
-        this.dropTimer = this.game.time.clock.createTimer('fall', 0.05, 0);
+        this.dropTimer = this.game.time.clock.createTimer('fall', 0.5, 0);
         this.dropTimer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP, this.dropDown, this);
         this.dropTimer.start();
 

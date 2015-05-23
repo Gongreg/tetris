@@ -11,7 +11,7 @@
 var gameOptions = {
     renderer: Kiwi.RENDERER_CANVAS,
     width: 400,
-    height: 650
+    height: 700
 };
 var game = new Kiwi.Game('content', 'Tetris', null, gameOptions);
 var mainState = new MainState('main');

@@ -7,6 +7,7 @@ class Block {
     public x: number;
     public y: number;
     private sprite: Kiwi.GameObjects.Sprite;
+    public status: number;
     constructor(x :number, y : number, sprite: Kiwi.GameObjects.Sprite)
     {
         this.x = x;

@@ -19,7 +19,7 @@ var Shapes;
             this.gameObject = new Kiwi.Group(state);
         }
         Shape.prototype.addBlock = function (texture, x, y) {
-            var sprite = new Kiwi.GameObjects.Sprite(this.state, this.state.textures['block-' + texture], 4 + x * (this.cubeSize - 1), 4 + y * (this.cubeSize - 1));
+            var sprite = new Kiwi.GameObjects.Sprite(this.state, this.state.textures['block-' + texture], 4 + x * (this.cubeSize - 1), 84 + y * (this.cubeSize - 1));
             this.blocks.push(new Block(x, y, sprite));
             this.gameObject.addChildAt(sprite, this.blocks.length - 1);
         };

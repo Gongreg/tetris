@@ -29,7 +29,7 @@ module Shapes {
                 this.state,
                 this.state.textures['block-' + texture],
                 4 + x * (this.cubeSize - 1),
-                4 + y * (this.cubeSize - 1)
+                84 + y * (this.cubeSize - 1)
             );
 
 
