@@ -72,7 +72,17 @@ class Board
 
         for (var index in blocks) {
             var block: Block = blocks[index];
+
             this.isTaken[block.y][block.x] = status;
+
+            if (status == BlockStatus.Taken) {
+                this.blocks[block.y][block.x] = block;
+            }
+
+            if (status == BlockStatus.Empty) {
+                this.blocks[block.y][block.x] = null;
+            }
+
         }
     }
 
@@ -88,22 +98,69 @@ class Board
         return true;
     }
 
-    /*
-    public checkRows(blocks: Block[])
-    {
+
+    public clearRows(blocks: Block[]) {
+        var rowsToClear: number[] = [];
+
         for (var index in blocks) {
-            var block: Block = blocks[index];
+            var block:Block = blocks[index];
 
-            for (var i: number = 0; i < 10; i++) {
+            var rowNumber:number = block.y;
 
+            if (rowsToClear.indexOf(rowNumber) !== -1) {
+                continue;
             }
 
-            if (this.isTaken[block.y][block.x]) {
-                return false;
+            var rowFull:boolean = true;
+            for (var i:number = 0; i < 10; i++) {
+                if (!this.isTaken[rowNumber][i]) {
+                    rowFull = false;
+                    break;
+                }
+            }
+
+            if (rowFull) {
+                rowsToClear.push(rowNumber);
+            }
+
+        }
+
+        var lowestRow: number = -1;
+        for (index in rowsToClear) {
+
+            if (rowNumber > lowestRow) {
+                lowestRow = rowNumber;
+            }
+
+            var rowNumber:number = rowsToClear[index];
+            //clear required rows
+            for (var i:number = 0; i < 10; i++) {
+                this.blocks[rowNumber][i].sprite.destroy();
+            }
+
+            this.setBlocks(this.blocks[rowNumber], BlockStatus.Empty);
+        }
+
+        var rowCount: number = rowsToClear.length;
+        //console.log(this.blocks);
+
+        if (rowCount > 0) {
+            for (var i: number = lowestRow - 1; i >= 0; i--) {
+                for (var j:number = 0; j < 10; j++) {
+                    if (this.isTaken[i][j] == BlockStatus.Taken) {
+                        console.log(i + ' ' + j);
+                        var block: Block = this.blocks[i][j];
+                        console.log(block);
+                        this.setBlocks([block], BlockStatus.Empty);
+                        block.setPosition(block.x, block.y + rowCount);
+                        this.setBlocks([block], BlockStatus.Taken);
+                    }
+                }
             }
         }
-        return true;
+
+        return rowCount;
     }
-    */
+
 
 }

@@ -15,6 +15,7 @@ var MainState = (function (_super) {
     function MainState() {
         _super.apply(this, arguments);
         this.pressed = false;
+        this.rotating = false;
         this.blocks = [
             'blue',
             'cyan',
@@ -59,8 +60,13 @@ var MainState = (function (_super) {
             this.pressed = true;
             this.moveTimer.start();
         }
+        if (this.upKey.isDown && !this.rotating) {
+            this.rotating = true;
+        }
+        if (this.upKey.isUp) {
+            this.rotating = false;
+        }
         if (this.downKey.isDown) {
-            //this.dropTimer.clear();
             this.dropTimer.delay = 0.001;
         }
         else {
@@ -80,7 +86,8 @@ var MainState = (function (_super) {
             return;
         }
         //try to clear the row
-        this.createEmptyShape(this.randomShape(), 3, 0);
+        this.board.clearRows(this.currentShape.getBlocks());
+        this.createEmptyShape();
         if (this.board.canCreateShape(this.currentShape.getBlocks())) {
             this.board.setBlocks(this.currentShape.getBlocks(), 1 /* Taken */);
             this.addChild(this.currentShape.getGameObject());
@@ -94,10 +101,22 @@ var MainState = (function (_super) {
         return 'Shape' + this.shapes[Math.floor(Math.random() * 7)];
     };
     MainState.prototype.createEmptyShape = function (shapeName, x, y) {
-        this.currentShape = new Shapes[this.randomShape()](this, 3, -2);
+        if (shapeName === void 0) { shapeName = ''; }
+        if (x === void 0) { x = 3; }
+        if (y === void 0) { y = -2; }
+        if (shapeName.length == 0) {
+            shapeName = this.randomShape();
+        }
+        this.currentShape = new Shapes[shapeName](this, x, y);
     };
     MainState.prototype.createNewShape = function (shapeName, x, y) {
-        this.currentShape = new Shapes[this.randomShape()](this, 3, -2);
+        if (shapeName === void 0) { shapeName = ''; }
+        if (x === void 0) { x = 3; }
+        if (y === void 0) { y = -2; }
+        if (shapeName.length == 0) {
+            shapeName = this.randomShape();
+        }
+        this.currentShape = new Shapes[shapeName](this, x, y);
         this.board.setBlocks(this.currentShape.getBlocks(), 1 /* Taken */);
         this.addChild(this.currentShape.getGameObject());
     };
@@ -107,6 +126,7 @@ var MainState = (function (_super) {
         this.leftKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.A);
         this.rightKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.D);
         this.downKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.S);
+        this.upKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.W);
         //move timer for limiting move amount
         this.moveTimer = this.game.time.clock.createTimer('move', 0.1, 0);
         this.moveTimer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP, this.resetControls, this);
@@ -115,7 +135,7 @@ var MainState = (function (_super) {
         this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.board, 5, 85));
         this.board = new Board();
         //drop the first shape
-        this.createNewShape(this.randomShape(), 3, -2);
+        this.createNewShape();
         this.dropTimer = this.game.time.clock.createTimer('fall', 0.5, 0);
         this.dropTimer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP, this.dropDown, this);
         this.dropTimer.start();

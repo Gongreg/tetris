@@ -25,19 +25,20 @@ module Shapes {
 
         protected addBlock(texture : string, x : number, y : number)
         {
-            var sprite: Kiwi.GameObjects.Sprite = new Kiwi.GameObjects.Sprite(
+
+            var block: Block = new Block(
+                x,
+                y,
                 this.state,
-                this.state.textures['block-' + texture],
-                4 + x * (this.cubeSize - 1),
-                84 + y * (this.cubeSize - 1)
+                this.state.textures['block-' + texture]
             );
 
+            this.blocks.push(
+                block
+            );
 
-            this.blocks.push(new Block(x, y, sprite));
-
-            this.gameObject.addChildAt(
-                sprite,
-                this.blocks.length - 1
+            this.gameObject.addChild(
+                block.sprite
             );
         }
 
@@ -56,9 +57,7 @@ module Shapes {
         {
             for (var index in this.blocks) {
                 var block: Block = this.blocks[index];
-
                 block.fall();
-                this.gameObject.getChildAt(index).transform.y += this.cubeSize - 1;
             }
 
         }
@@ -68,7 +67,7 @@ module Shapes {
             for (var index in this.blocks) {
                 var block: Block = this.blocks[index];
                 block.move(side);
-                this.gameObject.getChildAt(index).transform.x += side * (this.cubeSize - 1);
+
             }
         }
 
@@ -115,9 +114,9 @@ module Shapes {
         {
             super(state);
             this.addBlock(this.blockColor, x, y);
-            this.addBlock(this.blockColor, x, y+1);
             this.addBlock(this.blockColor, x+1, y);
             this.addBlock(this.blockColor, x+2, y);
+            this.addBlock(this.blockColor, x, y+1);
 
         }
 
@@ -187,5 +186,20 @@ module Shapes {
 
     }
 
+    export class ShapeLol extends Shape {
+
+        private blockColor : string = 'red';
+
+        constructor(state: Kiwi.State, x : number, y : number)
+        {
+            super(state);
+            this.addBlock(this.blockColor, x, y);
+            this.addBlock(this.blockColor, x, y+1);
+            this.addBlock(this.blockColor, x, y+2);
+            this.addBlock(this.blockColor, x, y+3);
+
+        }
+
+    }
 
 }

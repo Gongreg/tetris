@@ -19,9 +19,9 @@ var Shapes;
             this.gameObject = new Kiwi.Group(state);
         }
         Shape.prototype.addBlock = function (texture, x, y) {
-            var sprite = new Kiwi.GameObjects.Sprite(this.state, this.state.textures['block-' + texture], 4 + x * (this.cubeSize - 1), 84 + y * (this.cubeSize - 1));
-            this.blocks.push(new Block(x, y, sprite));
-            this.gameObject.addChildAt(sprite, this.blocks.length - 1);
+            var block = new Block(x, y, this.state, this.state.textures['block-' + texture]);
+            this.blocks.push(block);
+            this.gameObject.addChild(block.sprite);
         };
         Shape.prototype.getGameObject = function () {
             return this.gameObject;
@@ -33,14 +33,12 @@ var Shapes;
             for (var index in this.blocks) {
                 var block = this.blocks[index];
                 block.fall();
-                this.gameObject.getChildAt(index).transform.y += this.cubeSize - 1;
             }
         };
         Shape.prototype.move = function (side) {
             for (var index in this.blocks) {
                 var block = this.blocks[index];
                 block.move(side);
-                this.gameObject.getChildAt(index).transform.x += side * (this.cubeSize - 1);
             }
         };
         return Shape;
@@ -78,9 +76,9 @@ var Shapes;
             _super.call(this, state);
             this.blockColor = 'orange';
             this.addBlock(this.blockColor, x, y);
-            this.addBlock(this.blockColor, x, y + 1);
             this.addBlock(this.blockColor, x + 1, y);
             this.addBlock(this.blockColor, x + 2, y);
+            this.addBlock(this.blockColor, x, y + 1);
         }
         return ShapeL;
     })(Shape);
@@ -137,5 +135,18 @@ var Shapes;
         return ShapeZ;
     })(Shape);
     Shapes.ShapeZ = ShapeZ;
+    var ShapeLol = (function (_super) {
+        __extends(ShapeLol, _super);
+        function ShapeLol(state, x, y) {
+            _super.call(this, state);
+            this.blockColor = 'red';
+            this.addBlock(this.blockColor, x, y);
+            this.addBlock(this.blockColor, x, y + 1);
+            this.addBlock(this.blockColor, x, y + 2);
+            this.addBlock(this.blockColor, x, y + 3);
+        }
+        return ShapeLol;
+    })(Shape);
+    Shapes.ShapeLol = ShapeLol;
 })(Shapes || (Shapes = {}));
 //# sourceMappingURL=shape.js.map

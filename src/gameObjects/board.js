@@ -58,6 +58,12 @@ var Board = (function () {
         for (var index in blocks) {
             var block = blocks[index];
             this.isTaken[block.y][block.x] = status;
+            if (status == 1 /* Taken */) {
+                this.blocks[block.y][block.x] = block;
+            }
+            if (status == 0 /* Empty */) {
+                this.blocks[block.y][block.x] = null;
+            }
         }
     };
     Board.prototype.canCreateShape = function (blocks) {
@@ -68,6 +74,54 @@ var Board = (function () {
             }
         }
         return true;
+    };
+    Board.prototype.clearRows = function (blocks) {
+        var rowsToClear = [];
+        for (var index in blocks) {
+            var block = blocks[index];
+            var rowNumber = block.y;
+            if (rowsToClear.indexOf(rowNumber) !== -1) {
+                continue;
+            }
+            var rowFull = true;
+            for (var i = 0; i < 10; i++) {
+                if (!this.isTaken[rowNumber][i]) {
+                    rowFull = false;
+                    break;
+                }
+            }
+            if (rowFull) {
+                rowsToClear.push(rowNumber);
+            }
+        }
+        var lowestRow = -1;
+        for (index in rowsToClear) {
+            if (rowNumber > lowestRow) {
+                lowestRow = rowNumber;
+            }
+            var rowNumber = rowsToClear[index];
+            for (var i = 0; i < 10; i++) {
+                this.blocks[rowNumber][i].sprite.destroy();
+            }
+            this.setBlocks(this.blocks[rowNumber], 0 /* Empty */);
+        }
+        var rowCount = rowsToClear.length;
+        //console.log(this.blocks);
+        if (rowCount > 0) {
+            for (var i = lowestRow - 1; i >= 0; i--) {
+                for (var j = 0; j < 10; j++) {
+                    if (this.isTaken[i][j] == 1 /* Taken */) {
+                        console.log(i + ' ' + j);
+                        var block = this.blocks[i][j];
+                        console.log(block);
+                        this.setBlocks([block], 0 /* Empty */);
+                        block.setPosition(block.x, block.y + rowCount);
+                        this.setBlocks([block], 1 /* Taken */);
+                    }
+                }
+            }
+        }
+        return rowCount;
     };
     return Board;
 })();
