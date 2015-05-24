@@ -17,13 +17,15 @@ module Shapes {
 
         protected blocks: Block[] = [];
 
+        protected center: Block;
+
         constructor(state: Kiwi.State)
         {
             this.state = state;
             this.gameObject = new Kiwi.Group(state);
         }
 
-        protected addBlock(texture : string, x : number, y : number)
+        protected addBlock(texture: string, x: number, y: number, center: boolean = false )
         {
 
             var block: Block = new Block(
@@ -40,8 +42,11 @@ module Shapes {
             this.gameObject.addChild(
                 block.sprite
             );
-        }
 
+            if (center) {
+                this.center = block;
+            }
+        }
         public getGameObject()
         {
             return this.gameObject;
@@ -71,6 +76,20 @@ module Shapes {
             }
         }
 
+        rotate()
+        {
+
+            for (var index in this.blocks) {
+                var block: Block = this.blocks[index];
+
+                var xDiff: number = block.x - this.center.x;
+                var yDiff: number = block.y - this.center.y;
+
+                block.setPosition(this.center.x - yDiff, this.center.y + xDiff);
+
+            }
+        }
+
     }
 
     export class ShapeI extends Shape {
@@ -87,6 +106,10 @@ module Shapes {
 
         }
 
+        rotate()
+        {
+
+        }
     }
 
     export class ShapeJ extends Shape {
@@ -96,10 +119,11 @@ module Shapes {
         constructor(state: Kiwi.State, x : number, y : number)
         {
             super(state);
-            this.addBlock(this.blockColor, x, y);
+
+            this.addBlock(this.blockColor, x-1, y-1);
+            this.addBlock(this.blockColor, x-1, y);
+            this.addBlock(this.blockColor, x,   y, true);
             this.addBlock(this.blockColor, x+1, y);
-            this.addBlock(this.blockColor, x+2, y);
-            this.addBlock(this.blockColor, x+2, y+1);
 
 
         }
@@ -113,10 +137,10 @@ module Shapes {
         constructor(state: Kiwi.State, x : number, y : number)
         {
             super(state);
-            this.addBlock(this.blockColor, x, y);
+            this.addBlock(this.blockColor, x-1, y);
+            this.addBlock(this.blockColor, x,   y, true);
             this.addBlock(this.blockColor, x+1, y);
-            this.addBlock(this.blockColor, x+2, y);
-            this.addBlock(this.blockColor, x, y+1);
+            this.addBlock(this.blockColor, x+1, y-1);
 
         }
 
@@ -136,6 +160,10 @@ module Shapes {
 
         }
 
+        public rotate()
+        {
+        }
+
     }
 
     export class ShapeS extends Shape {
@@ -145,10 +173,10 @@ module Shapes {
         constructor(state: Kiwi.State, x : number, y : number)
         {
             super(state);
-            this.addBlock(this.blockColor, x, y);
-            this.addBlock(this.blockColor, x+1, y);
-            this.addBlock(this.blockColor, x, y+1);
-            this.addBlock(this.blockColor, x-1, y + 1);
+            this.addBlock(this.blockColor, x-1, y);
+            this.addBlock(this.blockColor, x,   y, true);
+            this.addBlock(this.blockColor, x,   y-1);
+            this.addBlock(this.blockColor, x+1, y-1);
 
         }
 
@@ -161,10 +189,10 @@ module Shapes {
         constructor(state: Kiwi.State, x : number, y : number)
         {
             super(state);
-            this.addBlock(this.blockColor, x, y);
+            this.addBlock(this.blockColor, x-1, y);
+            this.addBlock(this.blockColor, x,   y, true);
+            this.addBlock(this.blockColor, x,   y-1);
             this.addBlock(this.blockColor, x+1, y);
-            this.addBlock(this.blockColor, x+2, y);
-            this.addBlock(this.blockColor, x+1, y + 1);
 
         }
 
@@ -177,10 +205,10 @@ module Shapes {
         constructor(state: Kiwi.State, x : number, y : number)
         {
             super(state);
-            this.addBlock(this.blockColor, x, y);
+            this.addBlock(this.blockColor, x-1, y-1);
+            this.addBlock(this.blockColor, x,   y-1);
+            this.addBlock(this.blockColor, x,   y, true);
             this.addBlock(this.blockColor, x+1, y);
-            this.addBlock(this.blockColor, x+1, y+1);
-            this.addBlock(this.blockColor, x+2, y + 1);
 
         }
 

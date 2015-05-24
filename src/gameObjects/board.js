@@ -75,7 +75,7 @@ var Board = (function () {
         }
         return true;
     };
-    Board.prototype.clearRows = function (blocks) {
+    Board.prototype.getRowsToClear = function (blocks) {
         var rowsToClear = [];
         for (var index in blocks) {
             var block = blocks[index];
@@ -94,26 +94,27 @@ var Board = (function () {
                 rowsToClear.push(rowNumber);
             }
         }
+        return rowsToClear;
+    };
+    Board.prototype.clearRows = function (blocks) {
+        var rowsToClear = this.getRowsToClear(blocks);
         var lowestRow = -1;
-        for (index in rowsToClear) {
+        for (var index in rowsToClear) {
+            var rowNumber = rowsToClear[index];
             if (rowNumber > lowestRow) {
                 lowestRow = rowNumber;
             }
-            var rowNumber = rowsToClear[index];
             for (var i = 0; i < 10; i++) {
                 this.blocks[rowNumber][i].sprite.destroy();
             }
             this.setBlocks(this.blocks[rowNumber], 0 /* Empty */);
         }
         var rowCount = rowsToClear.length;
-        //console.log(this.blocks);
         if (rowCount > 0) {
             for (var i = lowestRow - 1; i >= 0; i--) {
                 for (var j = 0; j < 10; j++) {
                     if (this.isTaken[i][j] == 1 /* Taken */) {
-                        console.log(i + ' ' + j);
                         var block = this.blocks[i][j];
-                        console.log(block);
                         this.setBlocks([block], 0 /* Empty */);
                         block.setPosition(block.x, block.y + rowCount);
                         this.setBlocks([block], 1 /* Taken */);

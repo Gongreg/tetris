@@ -62,6 +62,9 @@ var MainState = (function (_super) {
         }
         if (this.upKey.isDown && !this.rotating) {
             this.rotating = true;
+            this.board.setBlocks(this.currentShape.getBlocks(), 0 /* Empty */);
+            this.currentShape.rotate();
+            this.board.setBlocks(this.currentShape.getBlocks(), 1 /* Taken */);
         }
         if (this.upKey.isUp) {
             this.rotating = false;
@@ -91,7 +94,6 @@ var MainState = (function (_super) {
         if (this.board.canCreateShape(this.currentShape.getBlocks())) {
             this.board.setBlocks(this.currentShape.getBlocks(), 1 /* Taken */);
             this.addChild(this.currentShape.getGameObject());
-            //this.currentShape.setVisible();
             return;
         }
         //console.log('gg');
@@ -102,8 +104,8 @@ var MainState = (function (_super) {
     };
     MainState.prototype.createEmptyShape = function (shapeName, x, y) {
         if (shapeName === void 0) { shapeName = ''; }
-        if (x === void 0) { x = 3; }
-        if (y === void 0) { y = -2; }
+        if (x === void 0) { x = 4; }
+        if (y === void 0) { y = -1; }
         if (shapeName.length == 0) {
             shapeName = this.randomShape();
         }
@@ -111,8 +113,8 @@ var MainState = (function (_super) {
     };
     MainState.prototype.createNewShape = function (shapeName, x, y) {
         if (shapeName === void 0) { shapeName = ''; }
-        if (x === void 0) { x = 3; }
-        if (y === void 0) { y = -2; }
+        if (x === void 0) { x = 4; }
+        if (y === void 0) { y = -1; }
         if (shapeName.length == 0) {
             shapeName = this.randomShape();
         }
@@ -135,7 +137,11 @@ var MainState = (function (_super) {
         this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.board, 5, 85));
         this.board = new Board();
         //drop the first shape
-        this.createNewShape();
+        this.createNewShape('ShapeI', 0, 19);
+        this.createNewShape('ShapeI', 4, 19);
+        this.createNewShape('ShapeI', 0, 18);
+        this.createNewShape('ShapeI', 4, 18);
+        this.createNewShape('ShapeLol', 9, 16);
         this.dropTimer = this.game.time.clock.createTimer('fall', 0.5, 0);
         this.dropTimer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP, this.dropDown, this);
         this.dropTimer.start();

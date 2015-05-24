@@ -84,6 +84,11 @@ class MainState extends Kiwi.State
 
         if (this.upKey.isDown && !this.rotating) {
             this.rotating = true;
+
+            this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Empty);
+            this.currentShape.rotate();
+            this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Taken);
+
         }
 
         if (this.upKey.isUp) {
@@ -129,7 +134,6 @@ class MainState extends Kiwi.State
             this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Taken);
 
             this.addChild(this.currentShape.getGameObject());
-            //this.currentShape.setVisible();
 
             return;
         }
@@ -143,7 +147,7 @@ class MainState extends Kiwi.State
         return 'Shape'+ this.shapes[Math.floor(Math.random() * 7)];
     }
 
-    createEmptyShape(shapeName: string = '', x: number = 3, y: number = -2)
+    createEmptyShape(shapeName: string = '', x: number = 4, y: number = -1)
     {
         if (shapeName.length == 0) {
             shapeName = this.randomShape();
@@ -153,7 +157,7 @@ class MainState extends Kiwi.State
         this.currentShape = new Shapes[shapeName](this, x, y);
     }
 
-    createNewShape(shapeName: string = '', x: number = 3, y: number = -2)
+    createNewShape(shapeName: string = '', x: number = 4, y: number = -1)
     {
 
         if (shapeName.length == 0) {
@@ -188,7 +192,12 @@ class MainState extends Kiwi.State
 
         //drop the first shape
 
-        this.createNewShape();
+
+        this.createNewShape('ShapeI', 0, 19);
+        this.createNewShape('ShapeI', 4, 19);
+        this.createNewShape('ShapeI', 0, 18);
+        this.createNewShape('ShapeI', 4, 18);
+        this.createNewShape('ShapeLol', 9, 16);
 
         this.dropTimer = this.game.time.clock.createTimer('fall', 0.5, 0);
         this.dropTimer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP, this.dropDown, this);

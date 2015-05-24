@@ -18,10 +18,14 @@ var Shapes;
             this.state = state;
             this.gameObject = new Kiwi.Group(state);
         }
-        Shape.prototype.addBlock = function (texture, x, y) {
+        Shape.prototype.addBlock = function (texture, x, y, center) {
+            if (center === void 0) { center = false; }
             var block = new Block(x, y, this.state, this.state.textures['block-' + texture]);
             this.blocks.push(block);
             this.gameObject.addChild(block.sprite);
+            if (center) {
+                this.center = block;
+            }
         };
         Shape.prototype.getGameObject = function () {
             return this.gameObject;
@@ -41,6 +45,14 @@ var Shapes;
                 block.move(side);
             }
         };
+        Shape.prototype.rotate = function () {
+            for (var index in this.blocks) {
+                var block = this.blocks[index];
+                var xDiff = block.x - this.center.x;
+                var yDiff = block.y - this.center.y;
+                block.setPosition(this.center.x - yDiff, this.center.y + xDiff);
+            }
+        };
         return Shape;
     })();
     Shapes.Shape = Shape;
@@ -54,6 +66,8 @@ var Shapes;
             this.addBlock(this.blockColor, x + 2, y);
             this.addBlock(this.blockColor, x + 3, y);
         }
+        ShapeI.prototype.rotate = function () {
+        };
         return ShapeI;
     })(Shape);
     Shapes.ShapeI = ShapeI;
@@ -62,10 +76,10 @@ var Shapes;
         function ShapeJ(state, x, y) {
             _super.call(this, state);
             this.blockColor = 'blue';
-            this.addBlock(this.blockColor, x, y);
+            this.addBlock(this.blockColor, x - 1, y - 1);
+            this.addBlock(this.blockColor, x - 1, y);
+            this.addBlock(this.blockColor, x, y, true);
             this.addBlock(this.blockColor, x + 1, y);
-            this.addBlock(this.blockColor, x + 2, y);
-            this.addBlock(this.blockColor, x + 2, y + 1);
         }
         return ShapeJ;
     })(Shape);
@@ -75,10 +89,10 @@ var Shapes;
         function ShapeL(state, x, y) {
             _super.call(this, state);
             this.blockColor = 'orange';
-            this.addBlock(this.blockColor, x, y);
+            this.addBlock(this.blockColor, x - 1, y);
+            this.addBlock(this.blockColor, x, y, true);
             this.addBlock(this.blockColor, x + 1, y);
-            this.addBlock(this.blockColor, x + 2, y);
-            this.addBlock(this.blockColor, x, y + 1);
+            this.addBlock(this.blockColor, x + 1, y - 1);
         }
         return ShapeL;
     })(Shape);
@@ -93,6 +107,8 @@ var Shapes;
             this.addBlock(this.blockColor, x + 1, y);
             this.addBlock(this.blockColor, x + 1, y + 1);
         }
+        ShapeO.prototype.rotate = function () {
+        };
         return ShapeO;
     })(Shape);
     Shapes.ShapeO = ShapeO;
@@ -101,10 +117,10 @@ var Shapes;
         function ShapeS(state, x, y) {
             _super.call(this, state);
             this.blockColor = 'green';
-            this.addBlock(this.blockColor, x, y);
-            this.addBlock(this.blockColor, x + 1, y);
-            this.addBlock(this.blockColor, x, y + 1);
-            this.addBlock(this.blockColor, x - 1, y + 1);
+            this.addBlock(this.blockColor, x - 1, y);
+            this.addBlock(this.blockColor, x, y, true);
+            this.addBlock(this.blockColor, x, y - 1);
+            this.addBlock(this.blockColor, x + 1, y - 1);
         }
         return ShapeS;
     })(Shape);
@@ -114,10 +130,10 @@ var Shapes;
         function ShapeT(state, x, y) {
             _super.call(this, state);
             this.blockColor = 'purple';
-            this.addBlock(this.blockColor, x, y);
+            this.addBlock(this.blockColor, x - 1, y);
+            this.addBlock(this.blockColor, x, y, true);
+            this.addBlock(this.blockColor, x, y - 1);
             this.addBlock(this.blockColor, x + 1, y);
-            this.addBlock(this.blockColor, x + 2, y);
-            this.addBlock(this.blockColor, x + 1, y + 1);
         }
         return ShapeT;
     })(Shape);
@@ -127,10 +143,10 @@ var Shapes;
         function ShapeZ(state, x, y) {
             _super.call(this, state);
             this.blockColor = 'red';
-            this.addBlock(this.blockColor, x, y);
+            this.addBlock(this.blockColor, x - 1, y - 1);
+            this.addBlock(this.blockColor, x, y - 1);
+            this.addBlock(this.blockColor, x, y, true);
             this.addBlock(this.blockColor, x + 1, y);
-            this.addBlock(this.blockColor, x + 1, y + 1);
-            this.addBlock(this.blockColor, x + 2, y + 1);
         }
         return ShapeZ;
     })(Shape);
