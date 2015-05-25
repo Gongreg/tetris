@@ -44,8 +44,7 @@ var MainState = (function (_super) {
             this.addImage('block-' + color, 'assets/img/block-' + color + '.png');
         }
     };
-    MainState.prototype.update = function () {
-        _super.prototype.update.call(this);
+    MainState.prototype.moveLeft = function () {
         if (this.leftKey.isDown && this.board.canMove(this.currentShape.getBlocks(), -1) && !this.pressed) {
             this.board.setBlocks(this.currentShape.getBlocks(), 0 /* Empty */);
             this.currentShape.move(-1);
@@ -53,6 +52,8 @@ var MainState = (function (_super) {
             this.pressed = true;
             this.moveTimer.start();
         }
+    };
+    MainState.prototype.moveRight = function () {
         if (this.rightKey.isDown && this.board.canMove(this.currentShape.getBlocks(), 1) && !this.pressed) {
             this.board.setBlocks(this.currentShape.getBlocks(), 0 /* Empty */);
             this.currentShape.move(1);
@@ -60,21 +61,47 @@ var MainState = (function (_super) {
             this.pressed = true;
             this.moveTimer.start();
         }
-        if (this.upKey.isDown && !this.rotating) {
+    };
+    MainState.prototype.rotate = function () {
+        var direction = 0;
+        if (this.xKey.isDown && !this.rotating) {
             this.rotating = true;
-            this.board.setBlocks(this.currentShape.getBlocks(), 0 /* Empty */);
-            this.currentShape.rotate();
+            this.board.setBlocks(this.currentShape.getBlocks(), 2 /* CurrentShape */);
+            var positions = this.currentShape.getNextRotation();
+            var rotated = false;
+            while (positions.length > 0) {
+                if (this.board.blocksEmpty(positions)) {
+                    rotated = true;
+                    this.board.setBlocks(this.currentShape.getBlocks(), 0 /* Empty */);
+                    this.currentShape.rotate();
+                    this.board.setBlocks(this.currentShape.getBlocks(), 1 /* Taken */);
+                    break;
+                }
+                if (rotated) {
+                    break;
+                }
+                positions = this.currentShape.getNextRotation();
+            }
             this.board.setBlocks(this.currentShape.getBlocks(), 1 /* Taken */);
         }
-        if (this.upKey.isUp) {
+        if (this.xKey.isUp) {
             this.rotating = false;
         }
+    };
+    MainState.prototype.changeDelay = function () {
         if (this.downKey.isDown) {
             this.dropTimer.delay = 0.001;
         }
         else {
             this.dropTimer.delay = 0.5;
         }
+    };
+    MainState.prototype.update = function () {
+        _super.prototype.update.call(this);
+        this.moveLeft();
+        this.moveRight();
+        this.rotate();
+        this.changeDelay();
         this.dropTimer.start();
     };
     MainState.prototype.resetControls = function () {
@@ -88,7 +115,7 @@ var MainState = (function (_super) {
             this.board.setBlocks(this.currentShape.getBlocks(), 1 /* Taken */);
             return;
         }
-        //try to clear the row
+        ////try to clear the row
         this.board.clearRows(this.currentShape.getBlocks());
         this.createEmptyShape();
         if (this.board.canCreateShape(this.currentShape.getBlocks())) {
@@ -125,10 +152,12 @@ var MainState = (function (_super) {
     MainState.prototype.create = function () {
         _super.prototype.create.call(this);
         //controls
-        this.leftKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.A);
-        this.rightKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.D);
-        this.downKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.S);
-        this.upKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.W);
+        this.leftKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.LEFT);
+        this.rightKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.RIGHT);
+        this.downKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.DOWN);
+        this.upKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.UP);
+        this.zKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.Z);
+        this.xKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.X);
         //move timer for limiting move amount
         this.moveTimer = this.game.time.clock.createTimer('move', 0.1, 0);
         this.moveTimer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP, this.resetControls, this);
@@ -137,11 +166,7 @@ var MainState = (function (_super) {
         this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.board, 5, 85));
         this.board = new Board();
         //drop the first shape
-        this.createNewShape('ShapeI', 0, 19);
-        this.createNewShape('ShapeI', 4, 19);
-        this.createNewShape('ShapeI', 0, 18);
-        this.createNewShape('ShapeI', 4, 18);
-        this.createNewShape('ShapeLol', 9, 16);
+        this.createNewShape();
         this.dropTimer = this.game.time.clock.createTimer('fall', 0.5, 0);
         this.dropTimer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP, this.dropDown, this);
         this.dropTimer.start();

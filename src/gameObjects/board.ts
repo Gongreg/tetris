@@ -131,7 +131,6 @@ class Board
     public clearRows(blocks: Block[]) {
         var rowsToClear: number[] = this.getRowsToClear(blocks);
 
-
         var lowestRow: number = -1;
 
         for (var index in rowsToClear) {
@@ -144,7 +143,7 @@ class Board
 
             //clear required rows
             for (var i:number = 0; i < 10; i++) {
-                this.blocks[rowNumber][i].sprite.destroy();
+                this.blocks[rowNumber][i].destroy();
             }
 
             this.setBlocks(this.blocks[rowNumber], BlockStatus.Empty);
@@ -170,5 +169,25 @@ class Board
         return rowCount;
     }
 
+
+    blocksEmpty(positions: PositionI[])
+    {
+        for (var index in positions) {
+
+            var position: PositionI = positions[index];
+
+            if (position.x < 0
+                || position.x > 9
+                || position.y > 19
+                || position.y < -2
+                || this.isTaken[position.y][position.x] == BlockStatus.Taken
+            ){
+                return false;
+            }
+
+        }
+
+        return true;
+    }
 
 }

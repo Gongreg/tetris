@@ -105,7 +105,7 @@ var Board = (function () {
                 lowestRow = rowNumber;
             }
             for (var i = 0; i < 10; i++) {
-                this.blocks[rowNumber][i].sprite.destroy();
+                this.blocks[rowNumber][i].destroy();
             }
             this.setBlocks(this.blocks[rowNumber], 0 /* Empty */);
         }
@@ -123,6 +123,15 @@ var Board = (function () {
             }
         }
         return rowCount;
+    };
+    Board.prototype.blocksEmpty = function (positions) {
+        for (var index in positions) {
+            var position = positions[index];
+            if (position.x < 0 || position.x > 9 || position.y > 19 || position.y < -2 || this.isTaken[position.y][position.x] == 1 /* Taken */) {
+                return false;
+            }
+        }
+        return true;
     };
     return Board;
 })();

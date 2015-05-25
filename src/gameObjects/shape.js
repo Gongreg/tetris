@@ -13,7 +13,8 @@ var Shapes;
 (function (Shapes) {
     var Shape = (function () {
         function Shape(state) {
-            this.cubeSize = 30;
+            this.currentRotation = 0;
+            this.currentTest = 0;
             this.blocks = [];
             this.state = state;
             this.gameObject = new Kiwi.Group(state);
@@ -45,14 +46,54 @@ var Shapes;
                 block.move(side);
             }
         };
-        Shape.prototype.rotate = function () {
+        Shape.prototype.getRotations = function () {
+            return Shape.rotations;
+        };
+        Shape.prototype.getNextRotation = function () {
+            var rotations = this.getRotations();
+            var nextPositions = [];
+            if (this.currentTest == 5) {
+                this.currentTest = 0;
+                return nextPositions;
+            }
+            var xMargin = rotations[this.currentRotation][this.currentTest][0];
+            var yMargin = rotations[this.currentRotation][this.currentTest][1];
             for (var index in this.blocks) {
                 var block = this.blocks[index];
                 var xDiff = block.x - this.center.x;
                 var yDiff = block.y - this.center.y;
-                block.setPosition(this.center.x - yDiff, this.center.y + xDiff);
+                nextPositions.push({
+                    x: this.center.x - yDiff + xMargin,
+                    y: this.center.y + xDiff - yMargin
+                });
+            }
+            this.currentTest++;
+            return nextPositions;
+        };
+        Shape.prototype.rotate = function () {
+            var rotations = this.getRotations();
+            var centerX = this.center.x;
+            var centerY = this.center.y;
+            var xMargin = rotations[this.currentRotation][this.currentTest - 1][0];
+            var yMargin = rotations[this.currentRotation][this.currentTest - 1][1];
+            for (var index in this.blocks) {
+                var block = this.blocks[index];
+                var xDiff = block.x - centerX;
+                var yDiff = block.y - centerY;
+                block.setPosition(centerX - yDiff + xMargin, centerY + xDiff - yMargin);
+            }
+            this.currentTest = 0;
+            this.currentRotation++;
+            if (this.currentRotation == 4) {
+                this.currentRotation = 0;
             }
         };
+        Shape.rotations = [
+            [[0, 0], [-1, 0], [-1, +1], [0, -2], [-1, -2]],
+            [[0, 0], [+1, 0], [+1, -1], [0, +2], [+1, +2]],
+            [[0, 0], [+1, 0], [+1, +1], [0, -2], [+1, -2]],
+            [[0, 0], [-1, 0], [-1, -1], [0, +2], [-1, +2]],
+        ];
         return Shape;
     })();
     Shapes.Shape = Shape;
@@ -61,13 +102,40 @@ var Shapes;
         function ShapeI(state, x, y) {
             _super.call(this, state);
             this.blockColor = 'cyan';
+            this.addBlock(this.blockColor, x - 1, y);
             this.addBlock(this.blockColor, x, y);
             this.addBlock(this.blockColor, x + 1, y);
             this.addBlock(this.blockColor, x + 2, y);
-            this.addBlock(this.blockColor, x + 3, y);
+            //invisible center
+            this.addCenter(x + 0.5, y + 0.5);
         }
-        ShapeI.prototype.rotate = function () {
+        ShapeI.prototype.getRotations = function () {
+            return ShapeI.rotations;
         };
+        ShapeI.prototype.addCenter = function (x, y) {
+            this.center = new Block(x, y, this.state, null);
+        };
+        ShapeI.prototype.fall = function () {
+            _super.prototype.fall.call(this);
+            this.center.fall();
+        };
+        ShapeI.prototype.move = function (side) {
+            _super.prototype.move.call(this, side);
+            this.center.move(side);
+        };
+        ShapeI.prototype.rotate = function () {
+            var rotations = this.getRotations();
+            var xMargin = rotations[this.currentRotation][this.currentTest - 1][0];
+            var yMargin = rotations[this.currentRotation][this.currentTest - 1][1];
+            _super.prototype.rotate.call(this);
+            this.center.setPosition(this.center.x + xMargin, this.center.y - yMargin);
+        };
+        ShapeI.rotations = [
+            [[0, 0], [+1, 0], [+1, +1], [0, -2], [+1, -2]],
+            [[0, 0], [-1, 0], [-1, -1], [0, +2], [-1, +2]],
+            [[0, 0], [-1, 0], [-1, +1], [0, -2], [-1, -2]],
+            [[0, 0], [+1, 0], [+1, -1], [0, +2], [+1, +2]],
+        ];
         return ShapeI;
     })(Shape);
     Shapes.ShapeI = ShapeI;
@@ -107,7 +175,12 @@ var Shapes;
             this.addBlock(this.blockColor, x + 1, y);
             this.addBlock(this.blockColor, x + 1, y + 1);
         }
+        //No need to do anything
         ShapeO.prototype.rotate = function () {
+        };
+        //No need to do anything
+        ShapeO.prototype.getNextRotation = function () {
+            return [];
         };
         return ShapeO;
     })(Shape);
@@ -151,18 +224,5 @@ var Shapes;
         return ShapeZ;
     })(Shape);
     Shapes.ShapeZ = ShapeZ;
-    var ShapeLol = (function (_super) {
-        __extends(ShapeLol, _super);
-        function ShapeLol(state, x, y) {
-            _super.call(this, state);
-            this.blockColor = 'red';
-            this.addBlock(this.blockColor, x, y);
-            this.addBlock(this.blockColor, x, y + 1);
-            this.addBlock(this.blockColor, x, y + 2);
-            this.addBlock(this.blockColor, x, y + 3);
-        }
-        return ShapeLol;
-    })(Shape);
-    Shapes.ShapeLol = ShapeLol;
 })(Shapes || (Shapes = {}));
 //# sourceMappingURL=shape.js.map

@@ -9,7 +9,15 @@ module Shapes {
     export class Shape
     {
 
-        protected cubeSize: number = 30;
+        static rotations = [
+            [[0, 0], [-1, 0], [-1, +1], [0, -2], [-1, -2]],
+            [[0, 0], [+1, 0], [+1, -1], [0, +2], [+1, +2]],
+            [[0, 0], [+1, 0], [+1, +1], [0, -2], [+1, -2]],
+            [[0, 0], [-1, 0], [-1, -1], [0, +2], [-1, +2]],
+        ];
+
+        protected currentRotation: number = 0;
+        protected currentTest: number = 0;
 
         protected gameObject : Kiwi.Group;
 
@@ -43,10 +51,12 @@ module Shapes {
                 block.sprite
             );
 
+
             if (center) {
                 this.center = block;
             }
         }
+
         public getGameObject()
         {
             return this.gameObject;
@@ -76,8 +86,24 @@ module Shapes {
             }
         }
 
-        rotate()
+        getRotations()
         {
+            return Shape.rotations;
+        }
+
+        getNextRotation()
+        {
+            var rotations = this.getRotations();
+
+            var nextPositions: PositionI[] = [];
+
+            if (this.currentTest == 5) {
+                this.currentTest = 0;
+                return nextPositions;
+            }
+
+            var xMargin: number = rotations[this.currentRotation][this.currentTest][0];
+            var yMargin: number = rotations[this.currentRotation][this.currentTest][1];
 
             for (var index in this.blocks) {
                 var block: Block = this.blocks[index];
@@ -85,8 +111,44 @@ module Shapes {
                 var xDiff: number = block.x - this.center.x;
                 var yDiff: number = block.y - this.center.y;
 
-                block.setPosition(this.center.x - yDiff, this.center.y + xDiff);
+                nextPositions.push({
+                    x: this.center.x - yDiff + xMargin,
+                    y: this.center.y + xDiff - yMargin
+                });
 
+            }
+
+            this.currentTest++;
+
+            return nextPositions;
+        }
+
+        rotate()
+        {
+
+            var rotations = this.getRotations();
+
+            var centerX: number = this.center.x;
+            var centerY: number = this.center.y;
+
+            var xMargin: number = rotations[this.currentRotation][this.currentTest - 1][0];
+            var yMargin: number = rotations[this.currentRotation][this.currentTest - 1][1];
+
+            for (var index in this.blocks) {
+                var block: Block = this.blocks[index];
+
+                var xDiff: number = block.x - centerX;
+                var yDiff: number = block.y - centerY;
+
+                block.setPosition(centerX - yDiff + xMargin, centerY + xDiff - yMargin);
+
+            }
+
+            this.currentTest = 0;
+
+            this.currentRotation++;
+            if (this.currentRotation == 4) {
+                this.currentRotation = 0;
             }
         }
 
@@ -96,20 +158,69 @@ module Shapes {
 
         private blockColor : string = 'cyan';
 
+        static rotations = [
+            [[0, 0], [+1, 0], [+1, +1], [0, -2], [+1, -2]],
+            [[0, 0], [-1, 0], [-1, -1], [0, +2], [-1, +2]],
+            [[0, 0], [-1, 0], [-1, +1], [0, -2], [-1, -2]],
+            [[0, 0], [+1, 0], [+1, -1], [0, +2], [+1, +2]],
+        ];
+
+
+
         constructor(state: Kiwi.State, x : number, y : number)
         {
             super(state);
-            this.addBlock(this.blockColor, x, y);
+            this.addBlock(this.blockColor, x-1, y);
+            this.addBlock(this.blockColor, x,   y);
             this.addBlock(this.blockColor, x+1, y);
             this.addBlock(this.blockColor, x+2, y);
-            this.addBlock(this.blockColor, x+3, y);
 
+            //invisible center
+            this.addCenter(x+0.5, y+0.5);
+
+        }
+
+        getRotations()
+        {
+            return ShapeI.rotations;
+        }
+
+        protected addCenter(x: number, y: number)
+        {
+            this.center =  new Block(
+                x,
+                y,
+                this.state,
+                null
+            );
+        }
+
+        public fall()
+        {
+            super.fall();
+            this.center.fall();
+
+        }
+
+        move(side: number)
+        {
+            super.move(side);
+            this.center.move(side);
         }
 
         rotate()
         {
 
+            var rotations = this.getRotations();
+
+            var xMargin: number = rotations[this.currentRotation][this.currentTest - 1][0];
+            var yMargin: number = rotations[this.currentRotation][this.currentTest - 1][1];
+
+            super.rotate();
+
+            this.center.setPosition(this.center.x + xMargin, this.center.y - yMargin);
         }
+
     }
 
     export class ShapeJ extends Shape {
@@ -160,8 +271,15 @@ module Shapes {
 
         }
 
+        //No need to do anything
         public rotate()
         {
+        }
+
+        //No need to do anything
+        getNextRotation()
+        {
+            return [];
         }
 
     }
@@ -209,22 +327,6 @@ module Shapes {
             this.addBlock(this.blockColor, x,   y-1);
             this.addBlock(this.blockColor, x,   y, true);
             this.addBlock(this.blockColor, x+1, y);
-
-        }
-
-    }
-
-    export class ShapeLol extends Shape {
-
-        private blockColor : string = 'red';
-
-        constructor(state: Kiwi.State, x : number, y : number)
-        {
-            super(state);
-            this.addBlock(this.blockColor, x, y);
-            this.addBlock(this.blockColor, x, y+1);
-            this.addBlock(this.blockColor, x, y+2);
-            this.addBlock(this.blockColor, x, y+3);
 
         }
 

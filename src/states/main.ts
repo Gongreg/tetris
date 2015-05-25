@@ -17,6 +17,8 @@ class MainState extends Kiwi.State
     private rightKey: Kiwi.Input.Key;
     private downKey: Kiwi.Input.Key;
     private upKey: Kiwi.Input.Key;
+    private zKey: Kiwi.Input.Key;
+    private xKey: Kiwi.Input.Key;
 
     private pressed: boolean = false;
     private rotating: boolean = false;
@@ -56,10 +58,8 @@ class MainState extends Kiwi.State
 
     }
 
-    update()
+    moveLeft()
     {
-        super.update();
-
         if (this.leftKey.isDown && this.board.canMove(this.currentShape.getBlocks(), -1) && !this.pressed) {
 
             this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Empty);
@@ -70,7 +70,10 @@ class MainState extends Kiwi.State
             this.moveTimer.start();
 
         }
+    }
 
+    moveRight()
+    {
         if (this.rightKey.isDown && this.board.canMove(this.currentShape.getBlocks(), 1) && !this.pressed) {
 
             this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Empty);
@@ -81,28 +84,75 @@ class MainState extends Kiwi.State
             this.moveTimer.start();
 
         }
+    }
 
-        if (this.upKey.isDown && !this.rotating) {
+    rotate()
+    {
+        var direction: number = 0;
+
+        if (this.xKey.isDown && !this.rotating) {
+
             this.rotating = true;
 
-            this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Empty);
-            this.currentShape.rotate();
+            this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.CurrentShape);
+
+            var positions: PositionI[] = this.currentShape.getNextRotation();
+            var rotated: boolean = false;
+            while (positions.length > 0) {
+
+                if (this.board.blocksEmpty(positions)) {
+                    rotated = true;
+                    this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Empty);
+                    this.currentShape.rotate();
+                    this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Taken);
+                    break;
+                }
+
+                if (rotated) {
+                    break;
+                }
+
+                positions = this.currentShape.getNextRotation();
+            }
+
             this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Taken);
 
         }
 
-        if (this.upKey.isUp) {
+        if (this.xKey.isUp) {
             this.rotating = false;
         }
 
+
+
+
+    }
+
+    changeDelay()
+    {
         if (this.downKey.isDown) {
 
             this.dropTimer.delay = 0.001;
 
-
         } else {
             this.dropTimer.delay = 0.5;
         }
+
+
+    }
+
+    update()
+    {
+        super.update();
+
+        this.moveLeft();
+
+        this.moveRight();
+
+        this.rotate();
+
+        this.changeDelay();
+
 
         this.dropTimer.start();
 
@@ -124,7 +174,7 @@ class MainState extends Kiwi.State
             return;
         }
 
-        //try to clear the row
+        ////try to clear the row
         this.board.clearRows(this.currentShape.getBlocks());
 
         this.createEmptyShape();
@@ -176,10 +226,12 @@ class MainState extends Kiwi.State
         super.create();
 
         //controls
-        this.leftKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.A);
-        this.rightKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.D);
-        this.downKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.S);
-        this.upKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.W);
+        this.leftKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.LEFT);
+        this.rightKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.RIGHT);
+        this.downKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.DOWN);
+        this.upKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.UP);
+        this.zKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.Z);
+        this.xKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.X);
 
         //move timer for limiting move amount
         this.moveTimer = this.game.time.clock.createTimer('move', 0.1, 0);
@@ -192,12 +244,7 @@ class MainState extends Kiwi.State
 
         //drop the first shape
 
-
-        this.createNewShape('ShapeI', 0, 19);
-        this.createNewShape('ShapeI', 4, 19);
-        this.createNewShape('ShapeI', 0, 18);
-        this.createNewShape('ShapeI', 4, 18);
-        this.createNewShape('ShapeLol', 9, 16);
+        this.createNewShape();
 
         this.dropTimer = this.game.time.clock.createTimer('fall', 0.5, 0);
         this.dropTimer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP, this.dropDown, this);
