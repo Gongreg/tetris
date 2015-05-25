@@ -91,9 +91,10 @@ module Shapes {
             return Shape.rotations;
         }
 
-        getNextRotation()
+        getNextRotation(direction: number)
         {
             var rotations = this.getRotations();
+            console.log(rotations);
 
             var nextPositions: PositionI[] = [];
 
@@ -102,8 +103,11 @@ module Shapes {
                 return nextPositions;
             }
 
-            var xMargin: number = rotations[this.currentRotation][this.currentTest][0];
-            var yMargin: number = rotations[this.currentRotation][this.currentTest][1];
+            var xMargin: number = direction * rotations[this.currentRotation][this.currentTest][0];
+            var yMargin: number = direction * rotations[this.currentRotation][this.currentTest][1];
+
+            console.log(xMargin + ' ' + yMargin);
+
 
             for (var index in this.blocks) {
                 var block: Block = this.blocks[index];
@@ -123,7 +127,7 @@ module Shapes {
             return nextPositions;
         }
 
-        rotate()
+        rotate(direction: number)
         {
 
             var rotations = this.getRotations();
@@ -131,14 +135,14 @@ module Shapes {
             var centerX: number = this.center.x;
             var centerY: number = this.center.y;
 
-            var xMargin: number = rotations[this.currentRotation][this.currentTest - 1][0];
-            var yMargin: number = rotations[this.currentRotation][this.currentTest - 1][1];
+            var xMargin: number = direction * rotations[this.currentRotation][this.currentTest - 1][0];
+            var yMargin: number = direction * rotations[this.currentRotation][this.currentTest - 1][1];
 
             for (var index in this.blocks) {
                 var block: Block = this.blocks[index];
 
-                var xDiff: number = block.x - centerX;
-                var yDiff: number = block.y - centerY;
+                var xDiff: number = direction * (block.x - centerX);
+                var yDiff: number = direction * (block.y - centerY);
 
                 block.setPosition(centerX - yDiff + xMargin, centerY + xDiff - yMargin);
 
@@ -146,9 +150,13 @@ module Shapes {
 
             this.currentTest = 0;
 
-            this.currentRotation++;
+            this.currentRotation += direction;
             if (this.currentRotation == 4) {
                 this.currentRotation = 0;
+            }
+
+            if (this.currentRotation == -1) {
+                this.currentRotation = 3;
             }
         }
 
@@ -159,10 +167,10 @@ module Shapes {
         private blockColor : string = 'cyan';
 
         static rotations = [
-            [[0, 0], [+1, 0], [+1, +1], [0, -2], [+1, -2]],
-            [[0, 0], [-1, 0], [-1, -1], [0, +2], [-1, +2]],
-            [[0, 0], [-1, 0], [-1, +1], [0, -2], [-1, -2]],
-            [[0, 0], [+1, 0], [+1, -1], [0, +2], [+1, +2]],
+            [[0, 0], [-2, 0], [+1, 0], [-2, -1], [+1, +2]],
+            [[0, 0], [-1, 0], [+2, 0], [-1, +2], [+2, -1]],
+            [[0, 0], [+2, 0], [-1, 0], [+2, +1], [-1, -2]],
+            [[0, 0], [+1, 0], [-2, 0], [+1, -2], [-2, +1]],
         ];
 
 
@@ -182,6 +190,7 @@ module Shapes {
 
         getRotations()
         {
+
             return ShapeI.rotations;
         }
 
@@ -208,15 +217,15 @@ module Shapes {
             this.center.move(side);
         }
 
-        rotate()
+        rotate(direction: number)
         {
 
             var rotations = this.getRotations();
 
-            var xMargin: number = rotations[this.currentRotation][this.currentTest - 1][0];
-            var yMargin: number = rotations[this.currentRotation][this.currentTest - 1][1];
+            var xMargin: number = direction * rotations[this.currentRotation][this.currentTest - 1][0];
+            var yMargin: number = direction * rotations[this.currentRotation][this.currentTest - 1][1];
 
-            super.rotate();
+            super.rotate(direction);
 
             this.center.setPosition(this.center.x + xMargin, this.center.y - yMargin);
         }

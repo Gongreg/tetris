@@ -16,6 +16,7 @@ var MainState = (function (_super) {
         _super.apply(this, arguments);
         this.pressed = false;
         this.rotating = false;
+        this.direction = 0;
         this.blocks = [
             'blue',
             'cyan',
@@ -62,29 +63,48 @@ var MainState = (function (_super) {
             this.moveTimer.start();
         }
     };
+    MainState.prototype.tryToRotate = function (direction) {
+        var positions = this.currentShape.getNextRotation(direction);
+        var rotated = false;
+        while (positions.length > 0) {
+            if (this.board.blocksEmpty(positions)) {
+                rotated = true;
+                this.board.setBlocks(this.currentShape.getBlocks(), 0 /* Empty */);
+                this.currentShape.rotate(direction);
+                this.board.setBlocks(this.currentShape.getBlocks(), 1 /* Taken */);
+                break;
+            }
+            if (rotated) {
+                break;
+            }
+            positions = this.currentShape.getNextRotation(direction);
+        }
+        return rotated;
+    };
     MainState.prototype.rotate = function () {
-        var direction = 0;
-        if (this.xKey.isDown && !this.rotating) {
+        if ((this.xKey.isDown || this.zKey.isDown || this.upKey.isDown) && !this.rotating) {
+            if (this.xKey.isDown) {
+                this.direction = 1;
+            }
+            else if (this.zKey.isDown) {
+                this.direction = -1;
+            }
+            else {
+                this.direction = 2;
+            }
             this.rotating = true;
             this.board.setBlocks(this.currentShape.getBlocks(), 2 /* CurrentShape */);
-            var positions = this.currentShape.getNextRotation();
-            var rotated = false;
-            while (positions.length > 0) {
-                if (this.board.blocksEmpty(positions)) {
-                    rotated = true;
-                    this.board.setBlocks(this.currentShape.getBlocks(), 0 /* Empty */);
-                    this.currentShape.rotate();
-                    this.board.setBlocks(this.currentShape.getBlocks(), 1 /* Taken */);
-                    break;
+            if (this.upKey.isDown) {
+                if (!this.tryToRotate(1)) {
+                    this.tryToRotate(-1);
                 }
-                if (rotated) {
-                    break;
-                }
-                positions = this.currentShape.getNextRotation();
+            }
+            else {
+                this.tryToRotate(this.direction);
             }
             this.board.setBlocks(this.currentShape.getBlocks(), 1 /* Taken */);
         }
-        if (this.xKey.isUp) {
+        if ((this.direction == -1 && this.zKey.isUp) || (this.direction == 1 && this.xKey.isUp) || (this.direction == 2 && this.upKey.isUp)) {
             this.rotating = false;
         }
     };

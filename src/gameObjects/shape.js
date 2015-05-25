@@ -49,15 +49,17 @@ var Shapes;
         Shape.prototype.getRotations = function () {
             return Shape.rotations;
         };
-        Shape.prototype.getNextRotation = function () {
+        Shape.prototype.getNextRotation = function (direction) {
             var rotations = this.getRotations();
+            console.log(rotations);
             var nextPositions = [];
             if (this.currentTest == 5) {
                 this.currentTest = 0;
                 return nextPositions;
             }
-            var xMargin = rotations[this.currentRotation][this.currentTest][0];
-            var yMargin = rotations[this.currentRotation][this.currentTest][1];
+            var xMargin = direction * rotations[this.currentRotation][this.currentTest][0];
+            var yMargin = direction * rotations[this.currentRotation][this.currentTest][1];
+            console.log(xMargin + ' ' + yMargin);
             for (var index in this.blocks) {
                 var block = this.blocks[index];
                 var xDiff = block.x - this.center.x;
@@ -70,22 +72,25 @@ var Shapes;
             this.currentTest++;
             return nextPositions;
         };
-        Shape.prototype.rotate = function () {
+        Shape.prototype.rotate = function (direction) {
             var rotations = this.getRotations();
             var centerX = this.center.x;
             var centerY = this.center.y;
-            var xMargin = rotations[this.currentRotation][this.currentTest - 1][0];
-            var yMargin = rotations[this.currentRotation][this.currentTest - 1][1];
+            var xMargin = direction * rotations[this.currentRotation][this.currentTest - 1][0];
+            var yMargin = direction * rotations[this.currentRotation][this.currentTest - 1][1];
             for (var index in this.blocks) {
                 var block = this.blocks[index];
-                var xDiff = block.x - centerX;
-                var yDiff = block.y - centerY;
+                var xDiff = direction * (block.x - centerX);
+                var yDiff = direction * (block.y - centerY);
                 block.setPosition(centerX - yDiff + xMargin, centerY + xDiff - yMargin);
             }
             this.currentTest = 0;
-            this.currentRotation++;
+            this.currentRotation += direction;
             if (this.currentRotation == 4) {
                 this.currentRotation = 0;
+            }
+            if (this.currentRotation == -1) {
+                this.currentRotation = 3;
             }
         };
         Shape.rotations = [
@@ -123,18 +128,18 @@ var Shapes;
             _super.prototype.move.call(this, side);
             this.center.move(side);
         };
-        ShapeI.prototype.rotate = function () {
+        ShapeI.prototype.rotate = function (direction) {
             var rotations = this.getRotations();
-            var xMargin = rotations[this.currentRotation][this.currentTest - 1][0];
-            var yMargin = rotations[this.currentRotation][this.currentTest - 1][1];
-            _super.prototype.rotate.call(this);
+            var xMargin = direction * rotations[this.currentRotation][this.currentTest - 1][0];
+            var yMargin = direction * rotations[this.currentRotation][this.currentTest - 1][1];
+            _super.prototype.rotate.call(this, direction);
             this.center.setPosition(this.center.x + xMargin, this.center.y - yMargin);
         };
         ShapeI.rotations = [
-            [[0, 0], [+1, 0], [+1, +1], [0, -2], [+1, -2]],
-            [[0, 0], [-1, 0], [-1, -1], [0, +2], [-1, +2]],
-            [[0, 0], [-1, 0], [-1, +1], [0, -2], [-1, -2]],
-            [[0, 0], [+1, 0], [+1, -1], [0, +2], [+1, +2]],
+            [[0, 0], [-2, 0], [+1, 0], [-2, -1], [+1, +2]],
+            [[0, 0], [-1, 0], [+2, 0], [-1, +2], [+2, -1]],
+            [[0, 0], [+2, 0], [-1, 0], [+2, +1], [-1, -2]],
+            [[0, 0], [+1, 0], [-2, 0], [+1, -2], [-2, +1]],
         ];
         return ShapeI;
     })(Shape);

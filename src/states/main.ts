@@ -22,6 +22,7 @@ class MainState extends Kiwi.State
 
     private pressed: boolean = false;
     private rotating: boolean = false;
+    private direction: number = 0;
 
     private board: Board;
 
@@ -86,40 +87,60 @@ class MainState extends Kiwi.State
         }
     }
 
+    tryToRotate(direction: number)
+    {
+
+        var positions: PositionI[] = this.currentShape.getNextRotation(direction);
+        var rotated: boolean = false;
+        while (positions.length > 0) {
+
+            if (this.board.blocksEmpty(positions)) {
+                rotated = true;
+                this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Empty);
+                this.currentShape.rotate(direction);
+                this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Taken);
+                break;
+            }
+
+            if (rotated) {
+                break;
+            }
+
+            positions = this.currentShape.getNextRotation(direction);
+        }
+        return rotated;
+    }
+
     rotate()
     {
-        var direction: number = 0;
+        if ((this.xKey.isDown || this.zKey.isDown || this.upKey.isDown) && !this.rotating) {
 
-        if (this.xKey.isDown && !this.rotating) {
+            if (this.xKey.isDown) {
+                this.direction = 1;
+            } else if (this.zKey.isDown) {
+                this.direction = -1;
+            } else {
+                this.direction = 2;
+            }
 
             this.rotating = true;
 
             this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.CurrentShape);
 
-            var positions: PositionI[] = this.currentShape.getNextRotation();
-            var rotated: boolean = false;
-            while (positions.length > 0) {
-
-                if (this.board.blocksEmpty(positions)) {
-                    rotated = true;
-                    this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Empty);
-                    this.currentShape.rotate();
-                    this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Taken);
-                    break;
+            if (this.upKey.isDown) {
+                if (!this.tryToRotate(1)) {
+                    this.tryToRotate(-1);
                 }
-
-                if (rotated) {
-                    break;
-                }
-
-                positions = this.currentShape.getNextRotation();
+            } else {
+                this.tryToRotate(this.direction);
             }
 
             this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Taken);
 
         }
 
-        if (this.xKey.isUp) {
+
+        if ((this.direction  == -1 && this.zKey.isUp) || (this.direction == 1 && this.xKey.isUp) || (this.direction == 2 && this.upKey.isUp)) {
             this.rotating = false;
         }
 
@@ -153,9 +174,7 @@ class MainState extends Kiwi.State
 
         this.changeDelay();
 
-
         this.dropTimer.start();
-
 
     }
 
