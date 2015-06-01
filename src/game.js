@@ -14,7 +14,7 @@ var gameOptions = {
     height: 700
 };
 var game = new Kiwi.Game('content', 'Tetris', null, gameOptions);
-var mainState = new MainState('main');
+var mainState = new Tetris.MainState('main');
 game.states.addState(mainState);
 game.states.switchState('main');
 //# sourceMappingURL=game.js.map

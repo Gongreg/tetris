@@ -4,271 +4,279 @@
 /// <reference path="../../lib/kiwi.d.ts" />
 /// <reference path="../gameObjects/shape.ts" />
 /// <reference path="../gameObjects/board.ts" />
+/// <reference path="../enums.ts" />
 
-class MainState extends Kiwi.State
-{
+module Tetris {
 
-    private currentShape: Shapes.Shape;
-
-    private dropTimer: Kiwi.Time.Timer;
-    private moveTimer: Kiwi.Time.Timer;
-
-    private leftKey: Kiwi.Input.Key;
-    private rightKey: Kiwi.Input.Key;
-    private downKey: Kiwi.Input.Key;
-    private upKey: Kiwi.Input.Key;
-    private zKey: Kiwi.Input.Key;
-    private xKey: Kiwi.Input.Key;
-
-    private pressed: boolean = false;
-    private rotating: boolean = false;
-    private direction: number = 0;
-
-    private board: Board;
-
-    private blocks: string[] = [
-        'blue',
-        'cyan',
-        'green',
-        'orange',
-        'purple',
-        'red',
-        'yellow'
-    ];
-
-    private shapes: string[] = [
-        'I',
-        'J',
-        'L',
-        'O',
-        'S',
-        'T',
-        'Z'
-    ];
-
-    preload()
+    export class MainState extends Kiwi.State
     {
-        super.preload();
-        this.addImage('board', 'assets/img/board.png');
-        this.addImage('borders', 'assets/img/borders.png');
 
-        for (var index in this.blocks) {
-            var color : string = this.blocks[index];
-            this.addImage('block-'+ color, 'assets/img/block-'+ color +'.png');
+        private currentShape: Shapes.Shape;
+
+        private dropTimer: Kiwi.Time.Timer;
+        private moveTimer: Kiwi.Time.Timer;
+
+        private leftKey: Kiwi.Input.Key;
+        private rightKey: Kiwi.Input.Key;
+        private downKey: Kiwi.Input.Key;
+        private upKey: Kiwi.Input.Key;
+        private zKey: Kiwi.Input.Key;
+        private xKey: Kiwi.Input.Key;
+
+        //Moving to left and right
+        private moving: boolean = false;
+
+        //rotating
+        private rotating: boolean = false;
+        private rotationDirection: number = 0;
+
+        private board: Board;
+
+        //block colors for sprite loading
+        private blocks: string[] = [
+            'blue',
+            'cyan',
+            'green',
+            'orange',
+            'purple',
+            'red',
+            'yellow'
+        ];
+
+        //block shapes for classes
+        private shapes: string[] = [
+            'I',
+            'J',
+            'L',
+            'O',
+            'S',
+            'T',
+            'Z'
+        ];
+
+        preload()
+        {
+            super.preload();
+            this.addImage('board', 'assets/img/board.png');
+            this.addImage('borders', 'assets/img/borders.png');
+
+            for (var index in this.blocks) {
+                var color : string = this.blocks[index];
+                this.addImage('block-'+ color, 'assets/img/block-'+ color +'.png');
+            }
+
         }
 
-    }
+        move()
+        {
 
-    moveLeft()
-    {
-        if (this.leftKey.isDown && this.board.canMove(this.currentShape.getBlocks(), -1) && !this.pressed) {
+            var left: boolean = this.leftKey.isDown;
+            var right: boolean = this.rightKey.isDown;
 
-            this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Empty);
-            this.currentShape.move(-1);
-            this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Taken);
+            var direction = right ? Direction.Right: Direction.Left;
 
-            this.pressed = true;
-            this.moveTimer.start();
+            if ((left || right) && !this.moving && this.board.emptyDirection(this.currentShape.getBlocks(), direction)) {
+                this.moving = true;
 
-        }
-    }
-
-    moveRight()
-    {
-        if (this.rightKey.isDown && this.board.canMove(this.currentShape.getBlocks(), 1) && !this.pressed) {
-
-            this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Empty);
-            this.currentShape.move(1);
-            this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Taken);
-
-            this.pressed = true;
-            this.moveTimer.start();
-
-        }
-    }
-
-    tryToRotate(direction: number)
-    {
-
-        var positions: PositionI[] = this.currentShape.getNextRotation(direction);
-        var rotated: boolean = false;
-        while (positions.length > 0) {
-
-            if (this.board.blocksEmpty(positions)) {
-                rotated = true;
                 this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Empty);
-                this.currentShape.rotate(direction);
+                this.currentShape.move(direction);
                 this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Taken);
-                break;
-            }
 
-            if (rotated) {
-                break;
-            }
+                this.moveTimer.start();
 
-            positions = this.currentShape.getNextRotation(direction);
+            }
         }
-        return rotated;
-    }
 
-    rotate()
-    {
-        if ((this.xKey.isDown || this.zKey.isDown || this.upKey.isDown) && !this.rotating) {
 
-            if (this.xKey.isDown) {
-                this.direction = 1;
-            } else if (this.zKey.isDown) {
-                this.direction = -1;
-            } else {
-                this.direction = 2;
-            }
+        resetMoving()
+        {
+            this.moving = false;
+        }
 
-            this.rotating = true;
+        rotate(direction: number)
+        {
 
             this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.CurrentShape);
 
-            if (this.upKey.isDown) {
-                if (!this.tryToRotate(1)) {
-                    this.tryToRotate(-1);
+            var positions: PositionI[] = this.currentShape.getNextRotation(direction);
+            var rotated: boolean = false;
+            while (positions.length > 0) {
+
+                if (this.board.emptyPositions(positions)) {
+                    rotated = true;
+                    this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Empty);
+                    this.currentShape.rotate(direction);
+                    this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Taken);
+                    break;
                 }
-            } else {
-                this.tryToRotate(this.direction);
+
+                if (rotated) {
+                    break;
+                }
+
+                positions = this.currentShape.getNextRotation(direction);
             }
 
             this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Taken);
 
+            return rotated;
+
+        }
+
+        //drop down event
+        dropDown()
+        {
+            //try to fall down
+            if (this.board.emptyDirection(this.currentShape.getBlocks(), Direction.Down)) {
+                this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Empty);
+                this.currentShape.fall();
+                this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Taken);
+                return;
+            }
+
+            ////try to clear the rows in which blocks exist
+            this.board.checkRows(this.currentShape.getBlocks());
+
+            //create empty shape
+            this.createEmptyShape();
+
+            //if we can create shape add it into the game
+            if (this.board.emptyPositions(this.currentShape.getPositions())) {
+
+                this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Taken);
+
+                this.addChild(this.currentShape.getGameObject());
+
+                return;
+            }
+
+            console.log('gg');
+            //if unable to create new shape gg
         }
 
 
-        if ((this.direction  == -1 && this.zKey.isUp) || (this.direction == 1 && this.xKey.isUp) || (this.direction == 2 && this.upKey.isUp)) {
-            this.rotating = false;
-        }
+        update()
+        {
+            super.update();
+
+            this.move();
 
 
+            //rotation controls
+            if (this.xKey.isDown) {
+                this.rotationDirection = Direction.Right;
+            } else if (this.zKey.isDown) {
+                this.rotationDirection = Direction.Left;
+            } else if (this.upKey.isDown) {
+                this.rotationDirection = Direction.Up;
+            }
 
+            if (this.rotationDirection !== 0 && !this.rotating) {
 
-    }
+                this.rotating = true;
 
-    changeDelay()
-    {
-        if (this.downKey.isDown) {
+                //try to rotate both to right and left
+                if (this.rotationDirection == Direction.Up) {
+                    if (!this.rotate(Direction.Right)) {
+                        this.rotate(Direction.Left);
+                    }
+                } else {
+                    this.rotate(this.rotationDirection);
+                }
 
-            this.dropTimer.delay = 0.001;
+            }
 
-        } else {
+            if ((this.rotationDirection == Direction.Left && this.zKey.isUp)
+                || (this.rotationDirection == Direction.Right && this.xKey.isUp)
+                || (this.rotationDirection == Direction.Up && this.upKey.isUp)
+            ) {
+                this.rotating = false;
+                this.rotationDirection = 0;
+            }
+
+            //delay if pressing down arrow
             this.dropTimer.delay = 0.5;
+            if (this.downKey.isDown) {
+                this.dropTimer.delay = 0.001;
+            }
+
+            //keep falling down
+            this.dropTimer.start();
+
         }
 
-
-    }
-
-    update()
-    {
-        super.update();
-
-        this.moveLeft();
-
-        this.moveRight();
-
-        this.rotate();
-
-        this.changeDelay();
-
-        this.dropTimer.start();
-
-    }
-
-    resetControls()
-    {
-        this.pressed = false;
-    }
-
-    //drop down event
-    dropDown()
-    {
-        if (this.board.canFall(this.currentShape.getBlocks())) {
-            this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Empty);
-            this.currentShape.fall();
-            this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Taken);
-            return;
+        randomShape()
+        {
+            return 'Shape'+ this.shapes[Math.floor(Math.random() * 7)];
         }
 
-        ////try to clear the row
-        this.board.clearRows(this.currentShape.getBlocks());
+        createEmptyShape(shapeName: string = '', x: number = 4, y: number = -1)
+        {
+            if (shapeName.length == 0) {
+                shapeName = this.randomShape();
+            }
 
-        this.createEmptyShape();
 
-        if (this.board.canCreateShape(this.currentShape.getBlocks())) {
+            this.currentShape = new Shapes[shapeName](this, x, y);
+        }
+
+        createNewShape(shapeName: string = '', x: number = 4, y: number = -1)
+        {
+
+            if (shapeName.length == 0) {
+                shapeName = this.randomShape();
+            }
+
+            this.currentShape = new Shapes[shapeName](this, x, y);
 
             this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Taken);
 
             this.addChild(this.currentShape.getGameObject());
-
-            return;
         }
 
-        //console.log('gg');
-        //if unable to create new shape gg
-    }
+        create()
+        {
+            super.create();
 
-    randomShape()
-    {
-        return 'Shape'+ this.shapes[Math.floor(Math.random() * 7)];
-    }
+            //controls
+            this.leftKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.LEFT);
+            this.rightKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.RIGHT);
+            this.downKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.DOWN);
+            this.upKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.UP);
+            this.zKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.Z);
+            this.xKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.X);
 
-    createEmptyShape(shapeName: string = '', x: number = 4, y: number = -1)
-    {
-        if (shapeName.length == 0) {
-            shapeName = this.randomShape();
+            //move timer for limiting move amount
+            this.moveTimer = this.game.time.clock.createTimer('move', 0.1, 0);
+            this.moveTimer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP, this.resetMoving, this);
+
+            //board
+            this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.borders, 0, 80));
+            this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.board, 5, 85));
+            this.board = new Board();
+
+            //drop the first shape
+            this.createNewShape('ShapeI', 1, 19);
+            this.createNewShape('ShapeI', 5, 19);
+            this.createNewShape('ShapeL', 3, 18);
+            this.createNewShape('ShapeI', 1, 17);
+            this.createNewShape('ShapeO', 5, 17);
+            this.createNewShape('ShapeO', 7, 17);
+            this.createNewShape('ShapeDot', 8, 19);
+            this.createNewShape('ShapeDot', 8, 16);
+            this.createNewShape('ShapeI', 1, 16);
+            this.createNewShape('ShapeT', 1, 15);
+            this.createNewShape('ShapeI', 5, 16);
+            this.createNewShape('ShapeDot', 8, 15);
+            this.createNewShape('ShapeI');
+
+            //add drop timer
+            this.dropTimer = this.game.time.clock.createTimer('fall', 0.5, 0);
+            this.dropTimer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP, this.dropDown, this);
+            this.dropTimer.start();
+
+
         }
-
-
-        this.currentShape = new Shapes[shapeName](this, x, y);
     }
 
-    createNewShape(shapeName: string = '', x: number = 4, y: number = -1)
-    {
-
-        if (shapeName.length == 0) {
-            shapeName = this.randomShape();
-        }
-
-        this.currentShape = new Shapes[shapeName](this, x, y);
-
-        this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Taken);
-
-        this.addChild(this.currentShape.getGameObject());
-    }
-
-    create()
-    {
-        super.create();
-
-        //controls
-        this.leftKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.LEFT);
-        this.rightKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.RIGHT);
-        this.downKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.DOWN);
-        this.upKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.UP);
-        this.zKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.Z);
-        this.xKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.X);
-
-        //move timer for limiting move amount
-        this.moveTimer = this.game.time.clock.createTimer('move', 0.1, 0);
-        this.moveTimer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP, this.resetControls, this);
-
-        //board
-        this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.borders, 0, 80));
-        this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.board, 5, 85));
-        this.board = new Board();
-
-        //drop the first shape
-
-        this.createNewShape();
-
-        this.dropTimer = this.game.time.clock.createTimer('fall', 0.5, 0);
-        this.dropTimer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP, this.dropDown, this);
-        this.dropTimer.start();
-
-
-    }
 }

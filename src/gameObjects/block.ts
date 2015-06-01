@@ -1,78 +1,80 @@
-/**
- * Created by Gytis on 2015-05-22.
- */
 /// <reference path="../../lib/kiwi.d.ts" />
-class Block {
+/// <reference path="../config.ts" />
+/// <reference path="position.ts" />
 
-    public x: number;
-    public y: number;
-    public sprite: Kiwi.GameObjects.Sprite;
-    public status: number;
+module Tetris {
 
-    protected size: number = 30;
+    export class Block {
 
-    constructor(x :number, y : number, state: Kiwi.State, texture: any)
-    {
-        this.x = x;
-        this.y = y;
+        public x: number;
+        public y: number;
 
-        if (texture) {
-            this.sprite = new Kiwi.GameObjects.Sprite(
-                state,
-                texture,
-                4 + x * (this.size - 1),
-                84 + y * (this.size - 1)
-            );
-        }
-    }
+        public sprite: Kiwi.GameObjects.Sprite;
 
-    fall()
-    {
-        this.y++;
+        protected size: number = 30;
 
-        if (this.sprite) {
-            this.sprite.transform.y += this.size - 1;
+        constructor(x :number, y : number, state: Kiwi.State, texture: any)
+        {
+            this.x = x;
+            this.y = y;
+
+            if (texture) {
+                this.sprite = new Kiwi.GameObjects.Sprite(
+                    state,
+                    texture,
+                    Config.offsetX  + Config.borderWidth + x * (this.size - 1),
+                    Config.offsetY + Config.borderWidth + y * (this.size - 1)
+                );
+            }
         }
 
-    }
+        public fall()
+        {
+            this.y++;
 
-    move(side:number)
-    {
-        this.x += side;
+            if (this.sprite) {
+                this.sprite.transform.y += this.size - 1;
+            }
 
-        if (this.sprite) {
-            this.sprite.transform.x += side * (this.size - 1);
         }
 
-    }
+        public move(side:number)
+        {
+            this.x += side;
 
-    setPosition(x:number, y:number)
-    {
+            if (this.sprite) {
+                this.sprite.transform.x += side * (this.size - 1);
+            }
 
-        var xDiff: number = x - this.x;
-        var yDiff: number = y - this.y;
-
-        this.x = x;
-        this.y = y;
-
-        if (this.sprite) {
-            this.sprite.transform.x += xDiff * (this.size - 1);
-            this.sprite.transform.y += yDiff * (this.size - 1);
         }
 
-    }
+        public setPosition(x:number, y:number)
+        {
 
-    destroy()
-    {
-        if (this.sprite) {
-            this.sprite.destroy();
+            var xDiff: number = x - this.x;
+            var yDiff: number = y - this.y;
+
+            this.x = x;
+            this.y = y;
+
+            if (this.sprite) {
+                this.sprite.transform.x += xDiff * (this.size - 1);
+                this.sprite.transform.y += yDiff * (this.size - 1);
+            }
+
+        }
+
+        public getPosition()
+        {
+            return new Position(this.x, this.y);
+        }
+
+        public destroy()
+        {
+            if (this.sprite) {
+                this.sprite.destroy();
+            }
         }
     }
-}
-
-interface PositionI
-{
-    x: number;
-    y: number;
 
 }
