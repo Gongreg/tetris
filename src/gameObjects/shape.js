@@ -18,6 +18,7 @@ var Tetris;
                 //status for rotation
                 this.currentRotation = 0;
                 this.currentTest = 0;
+                this.nextPositions = [];
                 this.blocks = [];
                 this.state = state;
                 this.gameObject = new Kiwi.Group(state);
@@ -50,53 +51,70 @@ var Tetris;
             Shape.prototype.fall = function () {
                 for (var index in this.blocks) {
                     var block = this.blocks[index];
+                    if (block == this.center) {
+                        continue;
+                    }
                     block.fall();
                 }
+                this.center.fall();
             };
             Shape.prototype.move = function (side) {
                 for (var index in this.blocks) {
                     var block = this.blocks[index];
+                    if (block == this.center) {
+                        continue;
+                    }
                     block.move(side);
                 }
+                this.center.move(side);
             };
             Shape.prototype.getRotations = function () {
                 return Shape.rotations;
             };
             Shape.prototype.getNextRotation = function (direction) {
-                var rotations = this.getRotations();
                 var nextPositions = [];
+                //if we checked all posibilities, return nothing
                 if (this.currentTest == 5) {
                     this.currentTest = 0;
                     return nextPositions;
                 }
-                var xMargin = direction * rotations[this.currentRotation][this.currentTest][0];
-                var yMargin = direction * rotations[this.currentRotation][this.currentTest][1];
-                for (var index in this.blocks) {
-                    var block = this.blocks[index];
-                    var xDiff = block.x - this.center.x;
-                    var yDiff = block.y - this.center.y;
-                    nextPositions.push({
-                        x: this.center.x - yDiff + xMargin,
-                        y: this.center.y + xDiff - yMargin
-                    });
-                }
-                this.currentTest++;
-                return nextPositions;
-            };
-            Shape.prototype.rotate = function (direction) {
                 var rotations = this.getRotations();
                 var centerX = this.center.x;
                 var centerY = this.center.y;
-                var xMargin = direction * rotations[this.currentRotation][this.currentTest - 1][0];
-                var yMargin = direction * rotations[this.currentRotation][this.currentTest - 1][1];
+                var xMargin = direction * rotations[this.currentRotation][this.currentTest][0];
+                var yMargin = direction * rotations[this.currentRotation][this.currentTest][1];
+                //set center positions, so we don't lose it during rotation
+                this.nextCenter = {
+                    x: centerX + xMargin,
+                    y: centerY + yMargin
+                };
                 for (var index in this.blocks) {
                     var block = this.blocks[index];
                     var xDiff = direction * (block.x - centerX);
                     var yDiff = direction * (block.y - centerY);
-                    block.setPosition(centerX - yDiff + xMargin, centerY + xDiff - yMargin);
+                    nextPositions.push({
+                        x: this.nextCenter.x - yDiff,
+                        y: this.nextCenter.y + xDiff
+                    });
+                }
+                this.nextPositions = nextPositions;
+                this.direction = direction;
+                //increate test amount
+                this.currentTest++;
+                return nextPositions;
+            };
+            Shape.prototype.rotate = function () {
+                this.center.setPosition(this.nextCenter.x, this.nextCenter.y);
+                for (var index in this.blocks) {
+                    var block = this.blocks[index];
+                    //if c block is in center position, it is already set
+                    if (block == this.center) {
+                        continue;
+                    }
+                    block.setPosition(this.nextPositions[index].x, this.nextPositions[index].y);
                 }
                 this.currentTest = 0;
-                this.currentRotation += direction;
+                this.currentRotation += this.direction;
                 if (this.currentRotation == 4) {
                     this.currentRotation = 0;
                 }
@@ -133,24 +151,6 @@ var Tetris;
             };
             ShapeI.prototype.addCenter = function (x, y) {
                 this.center = new Tetris.Block(x, y, this.state, null);
-            };
-            //need to move center too
-            ShapeI.prototype.fall = function () {
-                _super.prototype.fall.call(this);
-                this.center.fall();
-            };
-            //need to move center too
-            ShapeI.prototype.move = function (side) {
-                _super.prototype.move.call(this, side);
-                this.center.move(side);
-            };
-            //need to move center too
-            ShapeI.prototype.rotate = function (direction) {
-                var rotations = this.getRotations();
-                var xMargin = direction * rotations[this.currentRotation][this.currentTest - 1][0];
-                var yMargin = direction * rotations[this.currentRotation][this.currentTest - 1][1];
-                _super.prototype.rotate.call(this, direction);
-                this.center.setPosition(this.center.x + xMargin, this.center.y - yMargin);
             };
             ShapeI.rotations = [
                 [[0, 0], [-2, 0], [+1, 0], [-2, -1], [+1, +2]],
@@ -196,6 +196,7 @@ var Tetris;
                 this.addBlock(this.blockColor, x, y + 1);
                 this.addBlock(this.blockColor, x + 1, y);
                 this.addBlock(this.blockColor, x + 1, y + 1);
+                this.addCenter(x + 0.5, y + 0.5);
             }
             //No need to do anything
             ShapeO.prototype.rotate = function () {
@@ -203,6 +204,9 @@ var Tetris;
             //No need to do anything
             ShapeO.prototype.getNextRotation = function () {
                 return [];
+            };
+            ShapeO.prototype.addCenter = function (x, y) {
+                this.center = new Tetris.Block(x, y, this.state, null);
             };
             return ShapeO;
         })(Shape);

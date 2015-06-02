@@ -27,6 +27,10 @@ module Tetris {
             protected currentRotation: number = 0;
             protected currentTest: number = 0;
 
+            protected nextPositions: PositionI[] = [];
+            protected nextCenter: PositionI;
+            protected direction: number;
+
             protected blocks: Block[] = [];
 
             protected center: Block;
@@ -91,18 +95,24 @@ module Tetris {
             {
                 for (var index in this.blocks) {
                     var block: Block = this.blocks[index];
+                    if (block == this.center) {
+                        continue;
+                    }
                     block.fall();
                 }
-
+                this.center.fall();
             }
 
             move(side: number)
             {
                 for (var index in this.blocks) {
                     var block: Block = this.blocks[index];
+                    if (block == this.center) {
+                        continue;
+                    }
                     block.move(side);
-
                 }
+                this.center.move(side);
             }
 
             getRotations()
@@ -112,47 +122,27 @@ module Tetris {
 
             getNextRotation(direction: number)
             {
-                var rotations = this.getRotations();
-
                 var nextPositions: PositionI[] = [];
 
+                //if we checked all posibilities, return nothing
                 if (this.currentTest == 5) {
                     this.currentTest = 0;
                     return nextPositions;
                 }
-
-                var xMargin: number = direction * rotations[this.currentRotation][this.currentTest][0];
-                var yMargin: number = direction * rotations[this.currentRotation][this.currentTest][1];
-
-
-                for (var index in this.blocks) {
-                    var block: Block = this.blocks[index];
-
-                    var xDiff: number = block.x - this.center.x;
-                    var yDiff: number = block.y - this.center.y;
-
-                    nextPositions.push({
-                        x: this.center.x - yDiff + xMargin,
-                        y: this.center.y + xDiff - yMargin
-                    });
-
-                }
-
-                this.currentTest++;
-
-                return nextPositions;
-            }
-
-            rotate(direction: number)
-            {
 
                 var rotations = this.getRotations();
 
                 var centerX: number = this.center.x;
                 var centerY: number = this.center.y;
 
-                var xMargin: number = direction * rotations[this.currentRotation][this.currentTest - 1][0];
-                var yMargin: number = direction * rotations[this.currentRotation][this.currentTest - 1][1];
+                var xMargin: number = direction * rotations[this.currentRotation][this.currentTest][0];
+                var yMargin: number = direction * rotations[this.currentRotation][this.currentTest][1];
+
+                //set center positions, so we don't lose it during rotation
+                this.nextCenter = {
+                    x: centerX + xMargin,
+                    y: centerY + yMargin
+                };
 
                 for (var index in this.blocks) {
                     var block: Block = this.blocks[index];
@@ -160,13 +150,42 @@ module Tetris {
                     var xDiff: number = direction * (block.x - centerX);
                     var yDiff: number = direction * (block.y - centerY);
 
-                    block.setPosition(centerX - yDiff + xMargin, centerY + xDiff - yMargin);
+                    nextPositions.push({
+                        x: this.nextCenter.x - yDiff,
+                        y: this.nextCenter.y + xDiff
+                    });
+
+                }
+
+                this.nextPositions = nextPositions;
+                this.direction = direction;
+
+                //increate test amount
+                this.currentTest++;
+
+                return nextPositions;
+            }
+
+            rotate()
+            {
+
+                this.center.setPosition(this.nextCenter.x, this.nextCenter.y);
+
+                for (var index in this.blocks) {
+                    var block: Block = this.blocks[index];
+
+                    //if c block is in center position, it is already set
+                    if (block == this.center) {
+                        continue;
+                    }
+
+                    block.setPosition(this.nextPositions[index].x, this.nextPositions[index].y);
 
                 }
 
                 this.currentTest = 0;
 
-                this.currentRotation += direction;
+                this.currentRotation += this.direction;
                 if (this.currentRotation == 4) {
                     this.currentRotation = 0;
                 }
@@ -177,7 +196,6 @@ module Tetris {
             }
 
         }
-
 
         //DIFFERENT SHAPES
 
@@ -222,35 +240,6 @@ module Tetris {
                     this.state,
                     null
                 );
-            }
-
-            //need to move center too
-            public fall()
-            {
-                super.fall();
-                this.center.fall();
-
-            }
-
-            //need to move center too
-            public move(side: number)
-            {
-                super.move(side);
-                this.center.move(side);
-            }
-
-            //need to move center too
-            public rotate(direction: number)
-            {
-
-                var rotations = this.getRotations();
-
-                var xMargin: number = direction * rotations[this.currentRotation][this.currentTest - 1][0];
-                var yMargin: number = direction * rotations[this.currentRotation][this.currentTest - 1][1];
-
-                super.rotate(direction);
-
-                this.center.setPosition(this.center.x + xMargin, this.center.y - yMargin);
             }
 
         }
@@ -300,7 +289,7 @@ module Tetris {
                 this.addBlock(this.blockColor, x,   y + 1);
                 this.addBlock(this.blockColor, x+1, y);
                 this.addBlock(this.blockColor, x+1, y + 1);
-
+                this.addCenter(x + 0.5,  y + 0.5);
             }
 
             //No need to do anything
@@ -313,6 +302,17 @@ module Tetris {
             {
                 return [];
             }
+
+            protected addCenter(x: number, y: number)
+            {
+                this.center =  new Block(
+                    x,
+                    y,
+                    this.state,
+                    null
+                );
+            }
+
 
         }
 

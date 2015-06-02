@@ -5,6 +5,7 @@
 /// <reference path="../gameObjects/shape.ts" />
 /// <reference path="../gameObjects/board.ts" />
 /// <reference path="../enums.ts" />
+/// <reference path="../config.ts" />
 
 module Tetris {
 
@@ -87,7 +88,6 @@ module Tetris {
             }
         }
 
-
         resetMoving()
         {
             this.moving = false;
@@ -102,10 +102,11 @@ module Tetris {
             var rotated: boolean = false;
             while (positions.length > 0) {
 
+                console.log(positions);
                 if (this.board.emptyPositions(positions)) {
                     rotated = true;
                     this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Empty);
-                    this.currentShape.rotate(direction);
+                    this.currentShape.rotate();
                     this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Taken);
                     break;
                 }
@@ -251,24 +252,24 @@ module Tetris {
             this.moveTimer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP, this.resetMoving, this);
 
             //board
-            this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.borders, 0, 80));
-            this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.board, 5, 85));
+            this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.borders, Config.offsetX, Config.offsetY));
+            this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.board, Config.offsetX + Config.borderWidth, Config.offsetY + Config.borderWidth));
             this.board = new Board();
 
             //drop the first shape
-            this.createNewShape('ShapeI', 1, 19);
-            this.createNewShape('ShapeI', 5, 19);
-            this.createNewShape('ShapeL', 3, 18);
-            this.createNewShape('ShapeI', 1, 17);
-            this.createNewShape('ShapeO', 5, 17);
-            this.createNewShape('ShapeO', 7, 17);
-            this.createNewShape('ShapeDot', 8, 19);
-            this.createNewShape('ShapeDot', 8, 16);
-            this.createNewShape('ShapeI', 1, 16);
-            this.createNewShape('ShapeT', 1, 15);
-            this.createNewShape('ShapeI', 5, 16);
-            this.createNewShape('ShapeDot', 8, 15);
-            this.createNewShape('ShapeI');
+
+
+            for (var i: number = 0; i < 10; i++) {
+                var blockNumber = new Kiwi.GameObjects.TextField(this, i.toString(), 45 +  29 * i, 30, "#000000", 30);
+                this.addChild(blockNumber);
+            }
+
+            for (var i: number = 0; i < 20; i++) {
+                var blockNumber = new Kiwi.GameObjects.TextField(this, i.toString(), 0 , 80 + 29 * i, "#000000", 30);
+                this.addChild(blockNumber);
+            }
+
+            this.createNewShape();
 
             //add drop timer
             this.dropTimer = this.game.time.clock.createTimer('fall', 0.5, 0);
