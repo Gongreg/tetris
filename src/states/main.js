@@ -43,6 +43,7 @@ var Tetris;
                 'T',
                 'Z'
             ];
+            this.shapeStack = [];
         }
         MainState.prototype.preload = function () {
             _super.prototype.preload.call(this);
@@ -148,15 +149,39 @@ var Tetris;
             //keep falling down
             this.dropTimer.start();
         };
-        MainState.prototype.randomShape = function () {
-            return 'Shape' + this.shapes[Math.floor(Math.random() * 7)];
+        /**
+         * @author http://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array-in-javascript
+         */
+        MainState.shuffle = function (array) {
+            var counter = array.length, temp, index;
+            while (counter > 0) {
+                // Pick a random index
+                index = Math.floor(Math.random() * counter);
+                // Decrease counter by 1
+                counter--;
+                // And swap the last element with it
+                temp = array[counter];
+                array[counter] = array[index];
+                array[index] = temp;
+            }
+            return array;
+        };
+        MainState.prototype.getFromShapeStack = function () {
+            if (this.shapeStack.length == 0) {
+                var tempArray = this.shapes.slice(0);
+                for (var index in tempArray) {
+                    tempArray[index] = 'Shape' + tempArray[index];
+                }
+                this.shapeStack = MainState.shuffle(tempArray);
+            }
+            return this.shapeStack.pop();
         };
         MainState.prototype.createEmptyShape = function (shapeName, x, y) {
             if (shapeName === void 0) { shapeName = ''; }
             if (x === void 0) { x = 4; }
             if (y === void 0) { y = -1; }
             if (shapeName.length == 0) {
-                shapeName = this.randomShape();
+                shapeName = this.getFromShapeStack();
             }
             this.currentShape = new Tetris.Shapes[shapeName](this, x, y);
         };
@@ -165,7 +190,7 @@ var Tetris;
             if (x === void 0) { x = 4; }
             if (y === void 0) { y = -1; }
             if (shapeName.length == 0) {
-                shapeName = this.randomShape();
+                shapeName = this.getFromShapeStack();
             }
             this.currentShape = new Tetris.Shapes[shapeName](this, x, y);
             this.board.setBlocks(this.currentShape.getBlocks(), 1 /* Taken */);

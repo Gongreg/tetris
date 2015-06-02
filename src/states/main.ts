@@ -55,6 +55,8 @@ module Tetris {
             'Z'
         ];
 
+        private shapeStack: string[] = [];
+
         preload()
         {
             super.preload();
@@ -206,15 +208,48 @@ module Tetris {
 
         }
 
-        randomShape()
+        /**
+         * @author http://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array-in-javascript
+         */
+        static shuffle(array: any[]) {
+            var counter = array.length, temp, index;
+
+            // While there are elements in the array
+            while (counter > 0) {
+                // Pick a random index
+                index = Math.floor(Math.random() * counter);
+
+                // Decrease counter by 1
+                counter--;
+
+                // And swap the last element with it
+                temp = array[counter];
+                array[counter] = array[index];
+                array[index] = temp;
+            }
+
+            return array;
+        }
+
+        getFromShapeStack()
         {
-            return 'Shape'+ this.shapes[Math.floor(Math.random() * 7)];
+            if (this.shapeStack.length == 0) {
+                var tempArray: string[] = this.shapes.slice(0);
+                for (var index in tempArray) {
+                    tempArray[index] = 'Shape' + tempArray[index];
+                }
+
+                this.shapeStack = MainState.shuffle(tempArray);
+
+            }
+
+            return this.shapeStack.pop();
         }
 
         createEmptyShape(shapeName: string = '', x: number = 4, y: number = -1)
         {
             if (shapeName.length == 0) {
-                shapeName = this.randomShape();
+                shapeName = this.getFromShapeStack();
             }
 
 
@@ -225,7 +260,7 @@ module Tetris {
         {
 
             if (shapeName.length == 0) {
-                shapeName = this.randomShape();
+                shapeName = this.getFromShapeStack();
             }
 
             this.currentShape = new Shapes[shapeName](this, x, y);
