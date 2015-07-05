@@ -1,6 +1,7 @@
 /// <reference path="shape.ts" />
 /// <reference path="position.ts" />
 /// <reference path="../enums.ts" />
+/// <reference path="../config.ts" />
 
 module Tetris {
 
@@ -14,8 +15,8 @@ module Tetris {
          */
         private isTaken: Array<Array<number>> = [];
 
-        private height: number = 20;
-        private width: number = 10;
+        private height: number = Config.boardHeight;
+        private width: number = Config.boardWidth;
 
         //blocks array to keep track of blocks inside game
         private blocks: Array<Array<Block>> = [];

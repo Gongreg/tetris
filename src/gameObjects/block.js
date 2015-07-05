@@ -5,7 +5,7 @@ var Tetris;
 (function (Tetris) {
     var Block = (function () {
         function Block(x, y, state, texture) {
-            this.size = 30;
+            this.size = Tetris.Config.tileSize;
             this.x = x;
             this.y = y;
             if (texture) {

@@ -10,7 +10,7 @@
 //Initialise the Kiwi Game. 
 var gameOptions = {
     renderer: Kiwi.RENDERER_CANVAS,
-    width: 400,
+    width: 430,
     height: 700
 };
 var game = new Kiwi.Game('content', 'Tetris', null, gameOptions);

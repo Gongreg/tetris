@@ -6,6 +6,7 @@
 /// <reference path="../gameObjects/board.ts" />
 /// <reference path="../enums.ts" />
 /// <reference path="../config.ts" />
+/// <reference path="../hud.ts" />
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -229,6 +230,12 @@ var Tetris;
             this.zKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.Z);
             this.xKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.X);
             this.spaceKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.SPACEBAR);
+            var text = new Kiwi.GameObjects.TextField(this, "Score", Tetris.Config.boardWidthInPixels + 5, 60, "#000", 24);
+            // Add text to the state
+            this.addChild(text);
+            var score = new Kiwi.GameObjects.TextField(this, "0", Tetris.Config.boardWidthInPixels + 5, 85, "#000", 24);
+            this.addChild(score);
+            this.hud = new Tetris.Hud(score);
             //move timer for limiting move amount
             this.moveTimer = this.game.time.clock.createTimer('move', 0.1, 0);
             this.moveTimer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP, this.resetMoving, this);

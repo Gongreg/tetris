@@ -6,6 +6,7 @@
 /// <reference path="../gameObjects/board.ts" />
 /// <reference path="../enums.ts" />
 /// <reference path="../config.ts" />
+/// <reference path="../hud.ts" />
 
 module Tetris {
 
@@ -36,6 +37,8 @@ module Tetris {
         private dropping: boolean = false;
 
         private board: Board;
+
+        private hud: Hud;
 
         //block colors for sprite loading
         private blocks: string[] = [
@@ -316,6 +319,18 @@ module Tetris {
             this.zKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.Z);
             this.xKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.X);
             this.spaceKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.SPACEBAR);
+
+            var text = new Kiwi.GameObjects.TextField(this, "Score", Config.boardWidthInPixels + 5, 60, "#000", 24);
+
+            // Add text to the state
+            this.addChild(text);
+
+            var score = new Kiwi.GameObjects.TextField(this, "0", Config.boardWidthInPixels + 5, 85, "#000", 24);
+
+            this.addChild(score);
+
+            this.hud = new Hud(score);
+
 
             //move timer for limiting move amount
             this.moveTimer = this.game.time.clock.createTimer('move', 0.1, 0);

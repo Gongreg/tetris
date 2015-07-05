@@ -13,7 +13,7 @@
 
 var gameOptions = {
 	renderer: Kiwi.RENDERER_CANVAS, 
-	width: 400,
+	width: 430,
 	height: 700
 };
 

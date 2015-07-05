@@ -1,6 +1,7 @@
 /// <reference path="shape.ts" />
 /// <reference path="position.ts" />
 /// <reference path="../enums.ts" />
+/// <reference path="../config.ts" />
 var Tetris;
 (function (Tetris) {
     var Board = (function () {
@@ -12,8 +13,8 @@ var Tetris;
              * @type {Array}
              */
             this.isTaken = [];
-            this.height = 20;
-            this.width = 10;
+            this.height = Tetris.Config.boardHeight;
+            this.width = Tetris.Config.boardWidth;
             //blocks array to keep track of blocks inside game
             this.blocks = [];
             for (var i = -2; i < 20; i++) {

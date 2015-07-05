@@ -11,7 +11,7 @@ module Tetris {
 
         public sprite: Kiwi.GameObjects.Sprite;
 
-        protected size: number = 30;
+        protected size: number = Config.tileSize;
 
         constructor(x :number, y : number, state: Kiwi.State, texture: any)
         {
