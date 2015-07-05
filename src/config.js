@@ -4,7 +4,7 @@ var Tetris;
         function Config() {
         }
         Config.borderWidth = 4;
-        Config.offsetY = 80;
+        Config.offsetY = 0;
         Config.offsetX = 40;
         return Config;
     })();

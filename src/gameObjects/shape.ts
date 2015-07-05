@@ -285,11 +285,11 @@ module Tetris {
             constructor(state: Kiwi.State, x : number, y : number)
             {
                 super(state);
+                this.addBlock(this.blockColor, x,   y - 1);
                 this.addBlock(this.blockColor, x,   y);
-                this.addBlock(this.blockColor, x,   y + 1);
+                this.addBlock(this.blockColor, x+1, y - 1);
                 this.addBlock(this.blockColor, x+1, y);
-                this.addBlock(this.blockColor, x+1, y + 1);
-                this.addCenter(x + 0.5,  y + 0.5);
+                this.addCenter(x - 0.5,  y - 0.5);
             }
 
             //No need to do anything

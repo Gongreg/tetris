@@ -193,11 +193,11 @@ var Tetris;
             function ShapeO(state, x, y) {
                 _super.call(this, state);
                 this.blockColor = 'yellow';
+                this.addBlock(this.blockColor, x, y - 1);
                 this.addBlock(this.blockColor, x, y);
-                this.addBlock(this.blockColor, x, y + 1);
+                this.addBlock(this.blockColor, x + 1, y - 1);
                 this.addBlock(this.blockColor, x + 1, y);
-                this.addBlock(this.blockColor, x + 1, y + 1);
-                this.addCenter(x + 0.5, y + 0.5);
+                this.addCenter(x - 0.5, y - 0.5);
             }
             //No need to do anything
             ShapeO.prototype.rotate = function () {

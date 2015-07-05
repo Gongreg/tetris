@@ -236,16 +236,19 @@ var Tetris;
             this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.borders, Tetris.Config.offsetX, Tetris.Config.offsetY));
             this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.board, Tetris.Config.offsetX + Tetris.Config.borderWidth, Tetris.Config.offsetY + Tetris.Config.borderWidth));
             this.board = new Tetris.Board();
-            for (var i = 0; i < 10; i++) {
-                var blockNumber = new Kiwi.GameObjects.TextField(this, i.toString(), 45 + 29 * i, 30, "#000000", 30);
-                this.addChild(blockNumber);
-            }
-            for (var i = 0; i < 20; i++) {
-                var blockNumber = new Kiwi.GameObjects.TextField(this, i.toString(), 0, 80 + 29 * i, "#000000", 30);
-                this.addChild(blockNumber);
-            }
+            //
+            ////numbers on sides of board
+            //for (var i: number = 0; i < 10; i++) {
+            //    var blockNumber = new Kiwi.GameObjects.TextField(this, i.toString(), 45 +  29 * i, 30, "#000000", 30);
+            //    this.addChild(blockNumber);
+            //}
+            //
+            //for (var i: number = 0; i < 20; i++) {
+            //    var blockNumber = new Kiwi.GameObjects.TextField(this, i.toString(), 0 , 80 + 29 * i, "#000000", 30);
+            //    this.addChild(blockNumber);
+            //}
             //drop the first shape
-            this.createNewShape('ShapeS', 5, 5);
+            this.createNewShape();
             //add drop timer
             this.fallTimer = this.game.time.clock.createTimer('fall', 0.5, 0);
             this.fallTimer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP, this.fallDown, this);
