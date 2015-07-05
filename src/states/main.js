@@ -54,7 +54,7 @@ var Tetris;
                 this.addImage('block-' + color, 'assets/img/block-' + color + '.png');
             }
         };
-        MainState.prototype.move = function () {
+        MainState.prototype.moveControls = function () {
             var left = this.leftKey.isDown;
             var right = this.rightKey.isDown;
             var direction = right ? 1 /* Right */ : -1 /* Left */;
@@ -91,7 +91,7 @@ var Tetris;
             return rotated;
         };
         //drop down event
-        MainState.prototype.dropDown = function () {
+        MainState.prototype.fallDown = function () {
             //try to fall down
             if (this.board.emptyDirection(this.currentShape.getBlocks(), 4 /* Down */)) {
                 this.board.setBlocks(this.currentShape.getBlocks(), 0 /* Empty */);
@@ -112,9 +112,7 @@ var Tetris;
             console.log('gg');
             //if unable to create new shape gg
         };
-        MainState.prototype.update = function () {
-            _super.prototype.update.call(this);
-            this.move();
+        MainState.prototype.rotationControls = function () {
             //rotation controls
             if (this.xKey.isDown) {
                 this.rotationDirection = 1 /* Right */;
@@ -141,13 +139,26 @@ var Tetris;
                 this.rotating = false;
                 this.rotationDirection = 0;
             }
-            //delay if pressing down arrow
-            this.dropTimer.delay = 0.5;
-            if (this.downKey.isDown) {
-                this.dropTimer.delay = 0.001;
+        };
+        MainState.prototype.dropDownControls = function () {
+            if (this.spaceKey.justPressed(10)) {
             }
+        };
+        MainState.prototype.fallTimerControls = function () {
+            //delay if pressing down arrow
+            this.fallTimer.delay = 0.5;
+            if (this.downKey.isDown) {
+                this.fallTimer.delay = 0.001;
+            }
+        };
+        MainState.prototype.update = function () {
+            _super.prototype.update.call(this);
+            this.moveControls();
+            this.rotationControls();
+            this.dropDownControls();
+            this.fallTimerControls();
             //keep falling down
-            this.dropTimer.start();
+            this.fallTimer.start();
         };
         /**
          * @author http://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array-in-javascript
@@ -205,6 +216,7 @@ var Tetris;
             this.upKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.UP);
             this.zKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.Z);
             this.xKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.X);
+            this.spaceKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.SPACEBAR);
             //move timer for limiting move amount
             this.moveTimer = this.game.time.clock.createTimer('move', 0.1, 0);
             this.moveTimer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP, this.resetMoving, this);
@@ -220,11 +232,12 @@ var Tetris;
                 var blockNumber = new Kiwi.GameObjects.TextField(this, i.toString(), 0, 80 + 29 * i, "#000000", 30);
                 this.addChild(blockNumber);
             }
+            //drop the first shape
             this.createNewShape();
             //add drop timer
-            this.dropTimer = this.game.time.clock.createTimer('fall', 0.5, 0);
-            this.dropTimer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP, this.dropDown, this);
-            this.dropTimer.start();
+            this.fallTimer = this.game.time.clock.createTimer('fall', 0.5, 0);
+            this.fallTimer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP, this.fallDown, this);
+            this.fallTimer.start();
         };
         return MainState;
     })(Kiwi.State);

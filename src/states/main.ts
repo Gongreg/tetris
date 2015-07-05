@@ -14,7 +14,7 @@ module Tetris {
 
         private currentShape: Shapes.Shape;
 
-        private dropTimer: Kiwi.Time.Timer;
+        private fallTimer: Kiwi.Time.Timer;
         private moveTimer: Kiwi.Time.Timer;
 
         private leftKey: Kiwi.Input.Key;
@@ -23,6 +23,7 @@ module Tetris {
         private upKey: Kiwi.Input.Key;
         private zKey: Kiwi.Input.Key;
         private xKey: Kiwi.Input.Key;
+        private spaceKey: Kiwi.Input.Key;
 
         //Moving to left and right
         private moving: boolean = false;
@@ -70,7 +71,7 @@ module Tetris {
 
         }
 
-        move()
+        moveControls()
         {
 
             var left: boolean = this.leftKey.isDown;
@@ -127,7 +128,7 @@ module Tetris {
         }
 
         //drop down event
-        dropDown()
+        fallDown()
         {
             //try to fall down
             if (this.board.emptyDirection(this.currentShape.getBlocks(), Direction.Down)) {
@@ -157,14 +158,8 @@ module Tetris {
             //if unable to create new shape gg
         }
 
-
-        update()
+        rotationControls()
         {
-            super.update();
-
-            this.move();
-
-
             //rotation controls
             if (this.xKey.isDown) {
                 this.rotationDirection = Direction.Right;
@@ -197,14 +192,39 @@ module Tetris {
                 this.rotationDirection = 0;
             }
 
-            //delay if pressing down arrow
-            this.dropTimer.delay = 0.5;
-            if (this.downKey.isDown) {
-                this.dropTimer.delay = 0.001;
+        }
+
+        dropDownControls()
+        {
+            if (this.spaceKey.justPressed(10)) {
+                //this.dropDown();
             }
+        }
+
+        fallTimerControls()
+        {
+            //delay if pressing down arrow
+            this.fallTimer.delay = 0.5;
+            if (this.downKey.isDown) {
+                this.fallTimer.delay = 0.001;
+            }
+        }
+
+        update()
+        {
+            super.update();
+
+            this.moveControls();
+
+            this.rotationControls();
+
+            this.dropDownControls();
+
+            this.fallTimerControls();
+
 
             //keep falling down
-            this.dropTimer.start();
+            this.fallTimer.start();
 
         }
 
@@ -281,6 +301,7 @@ module Tetris {
             this.upKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.UP);
             this.zKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.Z);
             this.xKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.X);
+            this.spaceKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.SPACEBAR);
 
             //move timer for limiting move amount
             this.moveTimer = this.game.time.clock.createTimer('move', 0.1, 0);
@@ -291,9 +312,8 @@ module Tetris {
             this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.board, Config.offsetX + Config.borderWidth, Config.offsetY + Config.borderWidth));
             this.board = new Board();
 
-            //drop the first shape
 
-
+            //numbers on sides of board
             for (var i: number = 0; i < 10; i++) {
                 var blockNumber = new Kiwi.GameObjects.TextField(this, i.toString(), 45 +  29 * i, 30, "#000000", 30);
                 this.addChild(blockNumber);
@@ -304,12 +324,13 @@ module Tetris {
                 this.addChild(blockNumber);
             }
 
+            //drop the first shape
             this.createNewShape();
 
             //add drop timer
-            this.dropTimer = this.game.time.clock.createTimer('fall', 0.5, 0);
-            this.dropTimer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP, this.dropDown, this);
-            this.dropTimer.start();
+            this.fallTimer = this.game.time.clock.createTimer('fall', 0.5, 0);
+            this.fallTimer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP, this.fallDown, this);
+            this.fallTimer.start();
 
 
         }
