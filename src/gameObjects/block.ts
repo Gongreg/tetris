@@ -28,12 +28,12 @@ module Tetris {
             }
         }
 
-        public fall()
+        public fall(amountOfTiles : number = 1)
         {
-            this.y++;
+            this.y += amountOfTiles;
 
             if (this.sprite) {
-                this.sprite.transform.y += this.size - 1;
+                this.sprite.transform.y += amountOfTiles * (this.size - 1);
             }
 
         }

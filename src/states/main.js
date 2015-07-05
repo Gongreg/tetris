@@ -23,6 +23,8 @@ var Tetris;
             //rotating
             this.rotating = false;
             this.rotationDirection = 0;
+            //dropping
+            this.dropping = false;
             //block colors for sprite loading
             this.blocks = [
                 'blue',
@@ -74,7 +76,6 @@ var Tetris;
             var positions = this.currentShape.getNextRotation(direction);
             var rotated = false;
             while (positions.length > 0) {
-                console.log(positions);
                 if (this.board.emptyPositions(positions)) {
                     rotated = true;
                     this.board.setBlocks(this.currentShape.getBlocks(), 0 /* Empty */);
@@ -91,13 +92,18 @@ var Tetris;
             return rotated;
         };
         //drop down event
-        MainState.prototype.fallDown = function () {
+        MainState.prototype.fallDown = function (amountOfTiles, forceCheck) {
+            if (amountOfTiles === void 0) { amountOfTiles = 1; }
+            if (forceCheck === void 0) { forceCheck = false; }
             //try to fall down
+            //amount of Tiles specified must be empty, because here I don't check tiles below
             if (this.board.emptyDirection(this.currentShape.getBlocks(), 4 /* Down */)) {
                 this.board.setBlocks(this.currentShape.getBlocks(), 0 /* Empty */);
-                this.currentShape.fall();
+                this.currentShape.fall(amountOfTiles);
                 this.board.setBlocks(this.currentShape.getBlocks(), 1 /* Taken */);
-                return;
+                if (!forceCheck) {
+                    return;
+                }
             }
             ////try to clear the rows in which blocks exist
             this.board.checkRows(this.currentShape.getBlocks());
@@ -141,7 +147,13 @@ var Tetris;
             }
         };
         MainState.prototype.dropDownControls = function () {
-            if (this.spaceKey.justPressed(10)) {
+            if (this.spaceKey.isDown && !this.dropping) {
+                this.dropping = true;
+                var amountOfTiles = this.board.findLowestPossible(this.currentShape.getBlocks());
+                this.fallDown(amountOfTiles, true);
+            }
+            if (this.spaceKey.isUp && this.dropping) {
+                this.dropping = false;
             }
         };
         MainState.prototype.fallTimerControls = function () {
@@ -233,7 +245,7 @@ var Tetris;
                 this.addChild(blockNumber);
             }
             //drop the first shape
-            this.createNewShape();
+            this.createNewShape('ShapeS', 5, 5);
             //add drop timer
             this.fallTimer = this.game.time.clock.createTimer('fall', 0.5, 0);
             this.fallTimer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP, this.fallDown, this);

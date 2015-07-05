@@ -12,10 +12,11 @@ var Tetris;
                 this.sprite = new Kiwi.GameObjects.Sprite(state, texture, Tetris.Config.offsetX + Tetris.Config.borderWidth + x * (this.size - 1), Tetris.Config.offsetY + Tetris.Config.borderWidth + y * (this.size - 1));
             }
         }
-        Block.prototype.fall = function () {
-            this.y++;
+        Block.prototype.fall = function (amountOfTiles) {
+            if (amountOfTiles === void 0) { amountOfTiles = 1; }
+            this.y += amountOfTiles;
             if (this.sprite) {
-                this.sprite.transform.y += this.size - 1;
+                this.sprite.transform.y += amountOfTiles * (this.size - 1);
             }
         };
         Block.prototype.move = function (side) {

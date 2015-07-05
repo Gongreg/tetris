@@ -48,15 +48,16 @@ var Tetris;
                 }
                 return positions;
             };
-            Shape.prototype.fall = function () {
+            Shape.prototype.fall = function (amountOfTiles) {
+                if (amountOfTiles === void 0) { amountOfTiles = 1; }
                 for (var index in this.blocks) {
                     var block = this.blocks[index];
                     if (block == this.center) {
                         continue;
                     }
-                    block.fall();
+                    block.fall(amountOfTiles);
                 }
-                this.center.fall();
+                this.center.fall(amountOfTiles);
             };
             Shape.prototype.move = function (side) {
                 for (var index in this.blocks) {

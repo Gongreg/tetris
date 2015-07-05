@@ -32,6 +32,9 @@ module Tetris {
         private rotating: boolean = false;
         private rotationDirection: number = 0;
 
+        //dropping
+        private dropping: boolean = false;
+
         private board: Board;
 
         //block colors for sprite loading
@@ -105,7 +108,6 @@ module Tetris {
             var rotated: boolean = false;
             while (positions.length > 0) {
 
-                console.log(positions);
                 if (this.board.emptyPositions(positions)) {
                     rotated = true;
                     this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Empty);
@@ -128,14 +130,19 @@ module Tetris {
         }
 
         //drop down event
-        fallDown()
+        fallDown(amountOfTiles: number = 1, forceCheck: boolean = false)
         {
             //try to fall down
+            //amount of Tiles specified must be empty, because here I don't check tiles below
             if (this.board.emptyDirection(this.currentShape.getBlocks(), Direction.Down)) {
+
                 this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Empty);
-                this.currentShape.fall();
+                this.currentShape.fall(amountOfTiles);
                 this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Taken);
-                return;
+                if (!forceCheck) {
+                    return;
+                }
+
             }
 
             ////try to clear the rows in which blocks exist
@@ -196,8 +203,15 @@ module Tetris {
 
         dropDownControls()
         {
-            if (this.spaceKey.justPressed(10)) {
-                //this.dropDown();
+            if (this.spaceKey.isDown && !this.dropping) {
+                this.dropping = true;
+                var amountOfTiles: number = this.board.findLowestPossible(this.currentShape.getBlocks());
+                this.fallDown(amountOfTiles, true);
+
+            }
+
+            if (this.spaceKey.isUp && this.dropping) {
+                this.dropping = false;
             }
         }
 
@@ -325,7 +339,7 @@ module Tetris {
             }
 
             //drop the first shape
-            this.createNewShape();
+            this.createNewShape('ShapeS', 5, 5);
 
             //add drop timer
             this.fallTimer = this.game.time.clock.createTimer('fall', 0.5, 0);

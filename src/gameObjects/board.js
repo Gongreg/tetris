@@ -137,6 +137,24 @@ var Tetris;
                 }
             }
         };
+        //return number of rows to fall
+        Board.prototype.findLowestPossible = function (blocks) {
+            var rowsToFall = 20;
+            for (var i = 0; i < blocks.length; i++) {
+                var block = blocks[i];
+                for (var j = block.y + 1; j < this.height; j++) {
+                    if (this.isTaken[j][block.x] !== 0 /* Empty */) {
+                        break;
+                    }
+                }
+                var distance = Math.sqrt((j - block.y) * (j - block.y)) - 1;
+                if (distance !== 0 && distance < rowsToFall) {
+                    rowsToFall = j - block.y - 1;
+                }
+            }
+            console.log(rowsToFall);
+            return rowsToFall;
+        };
         return Board;
     })();
     Tetris.Board = Board;

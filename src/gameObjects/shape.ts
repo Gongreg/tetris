@@ -91,16 +91,16 @@ module Tetris {
             }
 
 
-            public fall()
+            public fall(amountOfTiles: number = 1)
             {
                 for (var index in this.blocks) {
                     var block: Block = this.blocks[index];
                     if (block == this.center) {
                         continue;
                     }
-                    block.fall();
+                    block.fall(amountOfTiles);
                 }
-                this.center.fall();
+                this.center.fall(amountOfTiles);
             }
 
             move(side: number)

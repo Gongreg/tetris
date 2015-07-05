@@ -196,6 +196,32 @@ module Tetris {
                 }
             }
         }
+
+        //return number of rows to fall
+        findLowestPossible(blocks: Block[])
+        {
+            var rowsToFall : number = 20;
+
+            for (var i: number = 0; i < blocks.length; i++) {
+                var block: Block = blocks[i];
+
+                for (var j: number = block.y + 1; j < this.height; j++) {
+                    if (this.isTaken[j][block.x] !== BlockStatus.Empty) {
+                        break;
+                    }
+                }
+
+                var distance: number = Math.sqrt((j - block.y) * (j - block.y)) - 1;
+
+                if (distance !== 0 && distance < rowsToFall) {
+                    rowsToFall = j - block.y - 1;
+                }
+            }
+
+            console.log(rowsToFall);
+
+            return rowsToFall;
+        }
     }
 }
 
