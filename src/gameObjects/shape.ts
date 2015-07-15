@@ -78,32 +78,19 @@ module Tetris {
                 return this.blocks;
             }
 
-            private isLowestInColumn(blockToCheck)
-            {
-                var lowest = true;
-
-                this.blocks.forEach(function(block) {
-                    if (blockToCheck.x === block.x && blockToCheck.y < block.y) {
-                        lowest = false;
-                        return false;
-                    }
-                });
-
-                return lowest;
+            private getRowOfLowestInColumn(column, blocks) {
+                return blocks.reduce((row, block) =>{
+                        return block.x === column && block.y > row ? block.y : row;
+                    }, R.head(blocks).y
+                )
             }
 
             //return lowest blocks
-            public getLowestBlocks()
-            {
-
-                var lowestBlocks : Block[] = [];
-
-                this.blocks.forEach((block) => {
-                    if (this.isLowestInColumn(block)) {
-                        lowestBlocks.push(block);
-                    }
+            public getLowestBlocks(blocks) {
+                return blocks.filter((block)=>{
+                    return block.y ===
+                        this.getRowOfLowestInColumn(block.x, blocks)
                 });
-                return lowestBlocks;
             }
 
             //get blocks position

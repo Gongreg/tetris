@@ -39,26 +39,17 @@ var Tetris;
             Shape.prototype.getBlocks = function () {
                 return this.blocks;
             };
-            Shape.prototype.isLowestInColumn = function (blockToCheck) {
-                var lowest = true;
-                this.blocks.forEach(function (block) {
-                    if (blockToCheck.x === block.x && blockToCheck.y < block.y) {
-                        lowest = false;
-                        return false;
-                    }
-                });
-                return lowest;
+            Shape.prototype.getRowOfLowestInColumn = function (column, blocks) {
+                return blocks.reduce(function (row, block) {
+                    return block.x === column && block.y > row ? block.y : row;
+                }, R.head(blocks).y);
             };
             //return lowest blocks
-            Shape.prototype.getLowestBlocks = function () {
+            Shape.prototype.getLowestBlocks = function (blocks) {
                 var _this = this;
-                var lowestBlocks = [];
-                this.blocks.forEach(function (block) {
-                    if (_this.isLowestInColumn(block)) {
-                        lowestBlocks.push(block);
-                    }
+                return blocks.filter(function (block) {
+                    return block.y === _this.getRowOfLowestInColumn(block.x, blocks);
                 });
-                return lowestBlocks;
             };
             //get blocks position
             Shape.prototype.getPositions = function () {

@@ -224,7 +224,7 @@ module Tetris {
         {
             if (this.spaceKey.isDown && !this.dropping) {
                 this.dropping = true;
-                var amountOfTiles: number = this.board.findLowestPossible(this.currentShape.getLowestBlocks());
+                var amountOfTiles: number = this.board.findLowestPossible(this.currentShape.getLowestBlocks(this.currentShape.getBlocks()));
 
                 this.fallDown(amountOfTiles, true);
 
