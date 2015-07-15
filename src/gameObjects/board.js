@@ -6,30 +6,19 @@ var Tetris;
 (function (Tetris) {
     var Board = (function () {
         function Board() {
-            /**
-             * 0 empty
-             * 1 taken by other
-             * 2 taken by current
-             * @type {Array}
-             */
-            this.isTaken = [];
             this.height = Tetris.Config.boardHeight;
             this.width = Tetris.Config.boardWidth;
             //blocks array to keep track of blocks inside game
             this.blocks = [];
             for (var i = -2; i < 20; i++) {
-                this.isTaken[i] = [];
                 this.blocks[i] = [];
-                for (var j = 0; j < 10; j++) {
-                    this.isTaken[i][j] = 0;
-                }
             }
         }
         //check if give positions are empty
         Board.prototype.emptyPositions = function (positions) {
             for (var i = 0; i < positions.length; i++) {
                 var position = positions[i];
-                if (position.x < 0 || position.x > this.width - 1 || position.y > this.height - 1 || position.y < -2 || this.isTaken[position.y][position.x] == 1 /* Taken */) {
+                if (position.x < 0 || position.x > this.width - 1 || position.y > this.height - 1 || position.y < -2 || this.blocks[position.y][position.x]) {
                     return false;
                 }
             }
@@ -37,37 +26,19 @@ var Tetris;
         };
         //check if direction is empty
         Board.prototype.emptyDirection = function (blocks, direction) {
-            var empty = true;
-            this.setBlocks(blocks, 2 /* CurrentShape */);
             for (var i = 0; i < blocks.length; i++) {
                 var block = blocks[i];
-                if (direction == 4 /* Down */ && (block.y == this.height - 1 || this.isTaken[block.y + 1][block.x] == 1 /* Taken */)) {
-                    empty = false;
-                    break;
-                }
-                if (direction == -1 /* Left */ && (block.x == 0 || this.isTaken[block.y][block.x - 1] == 1 /* Taken */)) {
-                    empty = false;
-                    break;
-                }
-                if (direction == 1 /* Right */ && (block.x == this.width - 1 || this.isTaken[block.y][block.x + 1] == 1 /* Taken */)) {
-                    empty = false;
-                    break;
+                if ((direction === 4 /* Down */ && (block.y === this.height - 1 || this.blocks[block.y + 1][block.x])) || (direction === -1 /* Left */ && (block.x === 0 || this.blocks[block.y][block.x - 1])) || (direction === 1 /* Right */ && (block.x === this.width - 1 || this.blocks[block.y][block.x + 1]))) {
+                    return false;
                 }
             }
-            this.setBlocks(blocks, 1 /* Taken */);
-            return empty;
+            return true;
         };
         //set status for blocks
         Board.prototype.setBlocks = function (blocks, status) {
             for (var i = 0; i < blocks.length; i++) {
                 var block = blocks[i];
-                this.isTaken[block.y][block.x] = status;
-                if (status == 1 /* Taken */) {
-                    this.blocks[block.y][block.x] = block;
-                }
-                if (status == 0 /* Empty */) {
-                    this.blocks[block.y][block.x] = null;
-                }
+                this.blocks[block.y][block.x] = status === 1 /* Taken */ ? block : null;
             }
         };
         //check for rows to clear and return amount of cleared rows
@@ -91,7 +62,7 @@ var Tetris;
                 }
                 var rowFull = true;
                 for (var j = 0; j < this.width; j++) {
-                    if (!this.isTaken[rowNumber][j]) {
+                    if (!this.blocks[rowNumber][j]) {
                         rowFull = false;
                         break;
                     }
@@ -128,7 +99,7 @@ var Tetris;
                 var lowerBy = rowIndex + 1;
                 for (var i = fromRow; i >= toRow; i--) {
                     for (var j = 0; j < this.width; j++) {
-                        if (this.isTaken[i][j] == 1 /* Taken */) {
+                        if (this.blocks[i][j]) {
                             var block = this.blocks[i][j];
                             this.setBlocks([block], 0 /* Empty */);
                             block.setPosition(block.x, block.y + lowerBy);
@@ -140,11 +111,11 @@ var Tetris;
         };
         //return number of rows to fall
         Board.prototype.findLowestPossible = function (blocks) {
-            var rowsToFall = 20;
-            for (var i = 0; i < blocks.length; i++) {
-                var block = blocks[i];
+            var rowsToFall = this.height;
+            for (var index in blocks) {
+                var block = blocks[index];
                 for (var j = block.y + 1; j < this.height; j++) {
-                    if (this.isTaken[j][block.x] !== 0 /* Empty */) {
+                    if (this.blocks[j][block.x]) {
                         break;
                     }
                 }
@@ -153,7 +124,7 @@ var Tetris;
                     rowsToFall = j - block.y - 1;
                 }
             }
-            console.log(rowsToFall);
+            console.log('rtf: ' + rowsToFall);
             return rowsToFall;
         };
         return Board;

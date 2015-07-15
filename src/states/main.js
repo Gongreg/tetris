@@ -7,6 +7,7 @@
 /// <reference path="../enums.ts" />
 /// <reference path="../config.ts" />
 /// <reference path="../hud.ts" />
+/// <reference path="../scoring.ts" />
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -26,6 +27,9 @@ var Tetris;
             this.rotationDirection = 0;
             //dropping
             this.dropping = false;
+            //private scoring: Scoring;
+            this.level = 1;
+            this.rowsCleared = 0;
             //block colors for sprite loading
             this.blocks = [
                 'blue',
@@ -63,9 +67,7 @@ var Tetris;
             var direction = right ? 1 /* Right */ : -1 /* Left */;
             if ((left || right) && !this.moving && this.board.emptyDirection(this.currentShape.getBlocks(), direction)) {
                 this.moving = true;
-                this.board.setBlocks(this.currentShape.getBlocks(), 0 /* Empty */);
                 this.currentShape.move(direction);
-                this.board.setBlocks(this.currentShape.getBlocks(), 1 /* Taken */);
                 this.moveTimer.start();
             }
         };
@@ -73,15 +75,12 @@ var Tetris;
             this.moving = false;
         };
         MainState.prototype.rotate = function (direction) {
-            this.board.setBlocks(this.currentShape.getBlocks(), 2 /* CurrentShape */);
             var positions = this.currentShape.getNextRotation(direction);
             var rotated = false;
             while (positions.length > 0) {
                 if (this.board.emptyPositions(positions)) {
                     rotated = true;
-                    this.board.setBlocks(this.currentShape.getBlocks(), 0 /* Empty */);
                     this.currentShape.rotate();
-                    this.board.setBlocks(this.currentShape.getBlocks(), 1 /* Taken */);
                     break;
                 }
                 if (rotated) {
@@ -89,7 +88,6 @@ var Tetris;
                 }
                 positions = this.currentShape.getNextRotation(direction);
             }
-            this.board.setBlocks(this.currentShape.getBlocks(), 1 /* Taken */);
             return rotated;
         };
         //drop down event
@@ -99,20 +97,28 @@ var Tetris;
             //try to fall down
             //amount of Tiles specified must be empty, because here I don't check tiles below
             if (this.board.emptyDirection(this.currentShape.getBlocks(), 4 /* Down */)) {
-                this.board.setBlocks(this.currentShape.getBlocks(), 0 /* Empty */);
+                //console.log('falldown Before: ' + this.currentShape.getBlocks()[0].y);
                 this.currentShape.fall(amountOfTiles);
-                this.board.setBlocks(this.currentShape.getBlocks(), 1 /* Taken */);
+                //console.log('falldown After: ' + this.currentShape.getBlocks()[0].y);
                 if (!forceCheck) {
                     return;
                 }
             }
+            //set blocks as used, since we are creating new shape
+            this.board.setBlocks(this.currentShape.getBlocks(), 1 /* Taken */);
             ////try to clear the rows in which blocks exist
-            this.board.checkRows(this.currentShape.getBlocks());
+            var rowsCleared = this.board.checkRows(this.currentShape.getBlocks());
+            if (rowsCleared > 0) {
+                this.rowsCleared += rowsCleared;
+                this.hud.addScore(this.level * rowsCleared);
+            }
+            if (this.rowsCleared > 10 * this.level) {
+                this.level++;
+            }
             //create empty shape
             this.createEmptyShape();
             //if we can create shape add it into the game
             if (this.board.emptyPositions(this.currentShape.getPositions())) {
-                this.board.setBlocks(this.currentShape.getBlocks(), 1 /* Taken */);
                 this.addChild(this.currentShape.getGameObject());
                 return;
             }
@@ -150,7 +156,7 @@ var Tetris;
         MainState.prototype.dropDownControls = function () {
             if (this.spaceKey.isDown && !this.dropping) {
                 this.dropping = true;
-                var amountOfTiles = this.board.findLowestPossible(this.currentShape.getBlocks());
+                var amountOfTiles = this.board.findLowestPossible(this.currentShape.getLowestBlocks());
                 this.fallDown(amountOfTiles, true);
             }
             if (this.spaceKey.isUp && this.dropping) {
@@ -217,7 +223,6 @@ var Tetris;
                 shapeName = this.getFromShapeStack();
             }
             this.currentShape = new Tetris.Shapes[shapeName](this, x, y);
-            this.board.setBlocks(this.currentShape.getBlocks(), 1 /* Taken */);
             this.addChild(this.currentShape.getGameObject());
         };
         MainState.prototype.create = function () {
@@ -243,17 +248,6 @@ var Tetris;
             this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.borders, Tetris.Config.offsetX, Tetris.Config.offsetY));
             this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.board, Tetris.Config.offsetX + Tetris.Config.borderWidth, Tetris.Config.offsetY + Tetris.Config.borderWidth));
             this.board = new Tetris.Board();
-            //
-            ////numbers on sides of board
-            //for (var i: number = 0; i < 10; i++) {
-            //    var blockNumber = new Kiwi.GameObjects.TextField(this, i.toString(), 45 +  29 * i, 30, "#000000", 30);
-            //    this.addChild(blockNumber);
-            //}
-            //
-            //for (var i: number = 0; i < 20; i++) {
-            //    var blockNumber = new Kiwi.GameObjects.TextField(this, i.toString(), 0 , 80 + 29 * i, "#000000", 30);
-            //    this.addChild(blockNumber);
-            //}
             //drop the first shape
             this.createNewShape();
             //add drop timer

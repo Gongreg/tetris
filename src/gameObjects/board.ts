@@ -7,13 +7,6 @@ module Tetris {
 
     export class Board
     {
-        /**
-         * 0 empty
-         * 1 taken by other
-         * 2 taken by current
-         * @type {Array}
-         */
-        private isTaken: Array<Array<number>> = [];
 
         private height: number = Config.boardHeight;
         private width: number = Config.boardWidth;
@@ -24,12 +17,9 @@ module Tetris {
         constructor()
         {
             for (var i:number = -2; i < 20; i++) {
-                this.isTaken[i] = [];
                 this.blocks[i] = [];
-                for (var j:number = 0; j < 10; j++) {
-                    this.isTaken[i][j] = 0;
-                }
             }
+
         }
 
         //check if give positions are empty
@@ -42,7 +32,7 @@ module Tetris {
                     || position.x > this.width - 1
                     || position.y > this.height - 1
                     || position.y < -2
-                    || this.isTaken[position.y][position.x] == BlockStatus.Taken
+                    || this.blocks[position.y][position.x]
                 ){
                     return false;
                 }
@@ -55,30 +45,20 @@ module Tetris {
         //check if direction is empty
         public emptyDirection(blocks: Block[], direction: number)
         {
-            var empty: boolean = true;
-            this.setBlocks(blocks, BlockStatus.CurrentShape);
+
             for (var i: number = 0; i < blocks.length; i++) {
                 var block: Block = blocks[i];
 
-                if (direction == Direction.Down && (block.y == this.height - 1 || this.isTaken[block.y + 1][block.x] == BlockStatus.Taken)) {
-                    empty = false;
-                    break;
-                }
-
-                if (direction == Direction.Left && (block.x == 0 || this.isTaken[block.y][block.x - 1] == BlockStatus.Taken)) {
-                    empty = false;
-                    break;
-                }
-
-                if (direction == Direction.Right && (block.x == this.width - 1 ||  this.isTaken[block.y][block.x + 1] == BlockStatus.Taken)) {
-                    empty = false;
-                    break;
+                if ((direction === Direction.Down && (block.y === this.height - 1 || this.blocks[block.y + 1][block.x]))
+                || (direction === Direction.Left && (block.x === 0 || this.blocks[block.y][block.x - 1]))
+                || (direction === Direction.Right && (block.x === this.width - 1 ||  this.blocks[block.y][block.x + 1]))
+                ) {
+                    return false;
                 }
             }
 
-            this.setBlocks(blocks, BlockStatus.Taken);
 
-            return empty;
+            return true;
         }
 
         //set status for blocks
@@ -88,16 +68,7 @@ module Tetris {
             for (var i: number = 0; i < blocks.length; i++) {
                 var block: Block = blocks[i];
 
-                this.isTaken[block.y][block.x] = status;
-
-                if (status == BlockStatus.Taken) {
-                    this.blocks[block.y][block.x] = block;
-                }
-
-                if (status == BlockStatus.Empty) {
-                    this.blocks[block.y][block.x] = null;
-                }
-
+                this.blocks[block.y][block.x] = status === BlockStatus.Taken ? block : null;
             }
         }
 
@@ -131,7 +102,7 @@ module Tetris {
 
                 var rowFull:boolean = true;
                 for (var j:number = 0; j < this.width; j++) {
-                    if (!this.isTaken[rowNumber][j]) {
+                    if (!this.blocks[rowNumber][j]) {
                         rowFull = false;
                         break;
                     }
@@ -185,7 +156,7 @@ module Tetris {
 
                 for (var i: number = fromRow; i >= toRow; i--) {
                     for (var j:number = 0; j < this.width; j++) {
-                        if (this.isTaken[i][j] == BlockStatus.Taken) {
+                        if (this.blocks[i][j]) {
 
                             var block: Block = this.blocks[i][j];
 
@@ -201,13 +172,16 @@ module Tetris {
         //return number of rows to fall
         findLowestPossible(blocks: Block[])
         {
-            var rowsToFall : number = 20;
+            var rowsToFall : number = this.height;
 
-            for (var i: number = 0; i < blocks.length; i++) {
-                var block: Block = blocks[i];
+            for (var index in blocks) {
+
+                var block: Block = blocks[index];
+
+                //get only lowest in blocks
 
                 for (var j: number = block.y + 1; j < this.height; j++) {
-                    if (this.isTaken[j][block.x] !== BlockStatus.Empty) {
+                    if (this.blocks[j][block.x]) {
                         break;
                     }
                 }
@@ -219,7 +193,7 @@ module Tetris {
                 }
             }
 
-            console.log(rowsToFall);
+            console.log('rtf: ' + rowsToFall);
 
             return rowsToFall;
         }

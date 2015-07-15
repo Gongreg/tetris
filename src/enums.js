@@ -3,7 +3,6 @@ var Tetris;
     (function (BlockStatus) {
         BlockStatus[BlockStatus["Empty"] = 0] = "Empty";
         BlockStatus[BlockStatus["Taken"] = 1] = "Taken";
-        BlockStatus[BlockStatus["CurrentShape"] = 2] = "CurrentShape";
     })(Tetris.BlockStatus || (Tetris.BlockStatus = {}));
     var BlockStatus = Tetris.BlockStatus;
     (function (Direction) {

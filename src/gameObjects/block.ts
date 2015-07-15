@@ -64,7 +64,7 @@ module Tetris {
 
         }
 
-        public getPosition()
+        public getPosition() : Position
         {
             return new Position(this.x, this.y);
         }

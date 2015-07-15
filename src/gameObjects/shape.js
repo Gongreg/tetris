@@ -39,14 +39,33 @@ var Tetris;
             Shape.prototype.getBlocks = function () {
                 return this.blocks;
             };
+            Shape.prototype.isLowestInColumn = function (blockToCheck) {
+                var lowest = true;
+                this.blocks.forEach(function (block) {
+                    if (blockToCheck.x === block.x && blockToCheck.y < block.y) {
+                        lowest = false;
+                        return false;
+                    }
+                });
+                return lowest;
+            };
+            //return lowest blocks
+            Shape.prototype.getLowestBlocks = function () {
+                var _this = this;
+                var lowestBlocks = [];
+                this.blocks.forEach(function (block) {
+                    if (_this.isLowestInColumn(block)) {
+                        lowestBlocks.push(block);
+                    }
+                });
+                return lowestBlocks;
+            };
             //get blocks position
             Shape.prototype.getPositions = function () {
-                var positions = [];
-                for (var i = 0; i < this.blocks.length; i++) {
-                    var block = this.blocks[i];
-                    positions.push(block.getPosition());
-                }
-                return positions;
+                return this.blocks.reduce(function (previousItem, currentItem) {
+                    previousItem.push(currentItem.getPosition());
+                    return previousItem;
+                }, []);
             };
             Shape.prototype.fall = function (amountOfTiles) {
                 if (amountOfTiles === void 0) { amountOfTiles = 1; }

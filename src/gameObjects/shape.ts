@@ -74,20 +74,47 @@ module Tetris {
 
             public getBlocks()
             {
+
                 return this.blocks;
+            }
+
+            private isLowestInColumn(blockToCheck)
+            {
+                var lowest = true;
+
+                this.blocks.forEach(function(block) {
+                    if (blockToCheck.x === block.x && blockToCheck.y < block.y) {
+                        lowest = false;
+                        return false;
+                    }
+                });
+
+                return lowest;
+            }
+
+            //return lowest blocks
+            public getLowestBlocks()
+            {
+
+                var lowestBlocks : Block[] = [];
+
+                this.blocks.forEach((block) => {
+                    if (this.isLowestInColumn(block)) {
+                        lowestBlocks.push(block);
+                    }
+                });
+                return lowestBlocks;
             }
 
             //get blocks position
             public getPositions()
             {
-                var positions: PositionI[] = [];
-                for (var i: number = 0; i < this.blocks.length; i++) {
-                    var block: Block = this.blocks[i];
-                    positions.push(block.getPosition());
 
-                }
+                return this.blocks.reduce(function(previousItem, currentItem : Block){
+                    previousItem.push(currentItem.getPosition());
 
-                return positions;
+                    return previousItem;
+                }, []);
             }
 
 

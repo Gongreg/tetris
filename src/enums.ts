@@ -1,8 +1,7 @@
 module Tetris {
     export enum BlockStatus {
         Empty,
-        Taken,
-        CurrentShape
+        Taken
     }
 
     export enum Direction {
