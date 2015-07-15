@@ -74,58 +74,62 @@ module Tetris {
 
             public getBlocks()
             {
-
                 return this.blocks;
             }
 
             private getRowOfLowestInColumn(column, blocks) {
                 return blocks.reduce((row, block) =>{
                         return block.x === column && block.y > row ? block.y : row;
-                    }, R.head(blocks).y
+                    }, blocks[0].y
                 )
             }
 
             //return lowest blocks
-            public getLowestBlocks(blocks) {
+            public getLowestBlocks(blocks : Block[]) {
+
+                if (!blocks) {
+                    blocks = this.blocks;
+                }
+
                 return blocks.filter((block)=>{
-                    return block.y ===
-                        this.getRowOfLowestInColumn(block.x, blocks)
+                    return block.y === this.getRowOfLowestInColumn(block.x, blocks)
                 });
             }
 
             //get blocks position
-            public getPositions()
+            public getPositions(blocks : Block[])
             {
-
-                return this.blocks.reduce(function(previousItem, currentItem : Block){
-                    previousItem.push(currentItem.getPosition());
-
-                    return previousItem;
-                }, []);
+                if (!blocks) {
+                    blocks = this.blocks;
+                }
+                return blocks.map(function(block : Block){
+                    return block.getPosition();
+                });
             }
 
 
             public fall(amountOfTiles: number = 1)
             {
-                for (var index in this.blocks) {
-                    var block: Block = this.blocks[index];
+                this.blocks.forEach((block) => {
                     if (block == this.center) {
-                        continue;
+                        return true;
                     }
                     block.fall(amountOfTiles);
-                }
+                });
+
                 this.center.fall(amountOfTiles);
+
             }
 
             move(side: number)
             {
-                for (var index in this.blocks) {
-                    var block: Block = this.blocks[index];
+                this.blocks.forEach((block) => {
                     if (block == this.center) {
-                        continue;
+                        return true;
                     }
                     block.move(side);
-                }
+                });
+
                 this.center.move(side);
             }
 
@@ -153,24 +157,23 @@ module Tetris {
                 var yMargin: number = direction * rotations[this.currentRotation][this.currentTest][1];
 
                 //set center positions, so we don't lose it during rotation
-                this.nextCenter = {
+                var nextCenter = {
                     x: centerX + xMargin,
                     y: centerY + yMargin
                 };
 
-                for (var index in this.blocks) {
-                    var block: Block = this.blocks[index];
-
+                this.blocks.forEach((block) => {
                     var xDiff: number = direction * (block.x - centerX);
                     var yDiff: number = direction * (block.y - centerY);
 
                     nextPositions.push({
-                        x: this.nextCenter.x - yDiff,
-                        y: this.nextCenter.y + xDiff
+                        x: nextCenter.x - yDiff,
+                        y: nextCenter.y + xDiff
                     });
 
-                }
+                });
 
+                this.nextCenter = nextCenter;
                 this.nextPositions = nextPositions;
                 this.direction = direction;
 
@@ -185,17 +188,16 @@ module Tetris {
 
                 this.center.setPosition(this.nextCenter.x, this.nextCenter.y);
 
-                for (var index in this.blocks) {
-                    var block: Block = this.blocks[index];
+                this.blocks.forEach((block, index) => {
 
                     //if c block is in center position, it is already set
                     if (block == this.center) {
-                        continue;
+                        return true;
                     }
 
                     block.setPosition(this.nextPositions[index].x, this.nextPositions[index].y);
 
-                }
+                });
 
                 this.currentTest = 0;
 

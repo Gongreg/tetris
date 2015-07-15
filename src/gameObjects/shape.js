@@ -42,41 +42,46 @@ var Tetris;
             Shape.prototype.getRowOfLowestInColumn = function (column, blocks) {
                 return blocks.reduce(function (row, block) {
                     return block.x === column && block.y > row ? block.y : row;
-                }, R.head(blocks).y);
+                }, blocks[0].y);
             };
             //return lowest blocks
             Shape.prototype.getLowestBlocks = function (blocks) {
                 var _this = this;
+                if (!blocks) {
+                    blocks = this.blocks;
+                }
                 return blocks.filter(function (block) {
                     return block.y === _this.getRowOfLowestInColumn(block.x, blocks);
                 });
             };
             //get blocks position
-            Shape.prototype.getPositions = function () {
-                return this.blocks.reduce(function (previousItem, currentItem) {
-                    previousItem.push(currentItem.getPosition());
-                    return previousItem;
-                }, []);
+            Shape.prototype.getPositions = function (blocks) {
+                if (!blocks) {
+                    blocks = this.blocks;
+                }
+                return blocks.map(function (block) {
+                    return block.getPosition();
+                });
             };
             Shape.prototype.fall = function (amountOfTiles) {
+                var _this = this;
                 if (amountOfTiles === void 0) { amountOfTiles = 1; }
-                for (var index in this.blocks) {
-                    var block = this.blocks[index];
-                    if (block == this.center) {
-                        continue;
+                this.blocks.forEach(function (block) {
+                    if (block == _this.center) {
+                        return true;
                     }
                     block.fall(amountOfTiles);
-                }
+                });
                 this.center.fall(amountOfTiles);
             };
             Shape.prototype.move = function (side) {
-                for (var index in this.blocks) {
-                    var block = this.blocks[index];
-                    if (block == this.center) {
-                        continue;
+                var _this = this;
+                this.blocks.forEach(function (block) {
+                    if (block == _this.center) {
+                        return true;
                     }
                     block.move(side);
-                }
+                });
                 this.center.move(side);
             };
             Shape.prototype.getRotations = function () {
@@ -95,19 +100,19 @@ var Tetris;
                 var xMargin = direction * rotations[this.currentRotation][this.currentTest][0];
                 var yMargin = direction * rotations[this.currentRotation][this.currentTest][1];
                 //set center positions, so we don't lose it during rotation
-                this.nextCenter = {
+                var nextCenter = {
                     x: centerX + xMargin,
                     y: centerY + yMargin
                 };
-                for (var index in this.blocks) {
-                    var block = this.blocks[index];
+                this.blocks.forEach(function (block) {
                     var xDiff = direction * (block.x - centerX);
                     var yDiff = direction * (block.y - centerY);
                     nextPositions.push({
-                        x: this.nextCenter.x - yDiff,
-                        y: this.nextCenter.y + xDiff
+                        x: nextCenter.x - yDiff,
+                        y: nextCenter.y + xDiff
                     });
-                }
+                });
+                this.nextCenter = nextCenter;
                 this.nextPositions = nextPositions;
                 this.direction = direction;
                 //increate test amount
@@ -115,15 +120,15 @@ var Tetris;
                 return nextPositions;
             };
             Shape.prototype.rotate = function () {
+                var _this = this;
                 this.center.setPosition(this.nextCenter.x, this.nextCenter.y);
-                for (var index in this.blocks) {
-                    var block = this.blocks[index];
+                this.blocks.forEach(function (block, index) {
                     //if c block is in center position, it is already set
-                    if (block == this.center) {
-                        continue;
+                    if (block == _this.center) {
+                        return true;
                     }
-                    block.setPosition(this.nextPositions[index].x, this.nextPositions[index].y);
-                }
+                    block.setPosition(_this.nextPositions[index].x, _this.nextPositions[index].y);
+                });
                 this.currentTest = 0;
                 this.currentRotation += this.direction;
                 if (this.currentRotation == 4) {
