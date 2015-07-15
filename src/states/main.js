@@ -156,7 +156,7 @@ var Tetris;
         MainState.prototype.dropDownControls = function () {
             if (this.spaceKey.isDown && !this.dropping) {
                 this.dropping = true;
-                var amountOfTiles = this.board.findLowestPossible(this.currentShape.getLowestBlocks(this.currentShape.getBlocks()));
+                var amountOfTiles = this.board.findLowestPossible(this.currentShape.getLowestBlocks());
                 this.fallDown(amountOfTiles, true);
             }
             if (this.spaceKey.isUp && this.dropping) {

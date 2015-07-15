@@ -8,7 +8,6 @@ var Tetris;
             this.size = Tetris.Config.tileSize;
             this.x = x;
             this.y = y;
-            console.log(Tetris.Config.offsetY);
             if (texture) {
                 this.sprite = new Kiwi.GameObjects.Sprite(state, texture, Tetris.Config.offsetX + Tetris.Config.borderWidth + x * (this.size - 1), Tetris.Config.offsetY + Tetris.Config.borderWidth + y * (this.size - 1));
             }

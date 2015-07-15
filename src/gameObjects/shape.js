@@ -47,18 +47,14 @@ var Tetris;
             //return lowest blocks
             Shape.prototype.getLowestBlocks = function (blocks) {
                 var _this = this;
-                if (!blocks) {
-                    blocks = this.blocks;
-                }
+                if (blocks === void 0) { blocks = this.blocks; }
                 return blocks.filter(function (block) {
                     return block.y === _this.getRowOfLowestInColumn(block.x, blocks);
                 });
             };
             //get blocks position
             Shape.prototype.getPositions = function (blocks) {
-                if (!blocks) {
-                    blocks = this.blocks;
-                }
+                if (blocks === void 0) { blocks = this.blocks; }
                 return blocks.map(function (block) {
                     return block.getPosition();
                 });

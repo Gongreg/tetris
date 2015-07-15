@@ -85,11 +85,7 @@ module Tetris {
             }
 
             //return lowest blocks
-            public getLowestBlocks(blocks : Block[]) {
-
-                if (!blocks) {
-                    blocks = this.blocks;
-                }
+            public getLowestBlocks(blocks : Block[] = this.blocks) {
 
                 return blocks.filter((block)=>{
                     return block.y === this.getRowOfLowestInColumn(block.x, blocks)
@@ -97,11 +93,9 @@ module Tetris {
             }
 
             //get blocks position
-            public getPositions(blocks : Block[])
+            public getPositions(blocks : Block[] = this.blocks)
             {
-                if (!blocks) {
-                    blocks = this.blocks;
-                }
+
                 return blocks.map(function(block : Block){
                     return block.getPosition();
                 });
