@@ -299,7 +299,7 @@ module Tetris {
             return this.shapeStack.pop();
         }
 
-        createEmptyShape(shapeName: string = '', x: number = 4, y: number = -1)
+        createEmptyShape(shapeName: string = '', x: number = 4, y: number = 1)
         {
             if (shapeName.length == 0) {
                 shapeName = this.getFromShapeStack();
@@ -309,7 +309,7 @@ module Tetris {
             this.currentShape = new Shapes[shapeName](this, x, y);
         }
 
-        createNewShape(shapeName: string = '', x: number = 4, y: number = -1)
+        createNewShape(shapeName: string = '', x: number = 4, y: number = 1)
         {
 
             if (shapeName.length == 0) {
@@ -352,8 +352,8 @@ module Tetris {
             this.moveTimer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP, this.resetMoving, this);
 
             //board
-            this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.borders, Config.offsetX, Config.offsetY));
-            this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.board, Config.offsetX + Config.borderWidth, Config.offsetY + Config.borderWidth));
+            this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.borders, Config.offsetX, 0));
+            this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.board, Config.offsetX + Config.borderWidth, Config.borderWidth));
             this.board = new Board();
 
             //drop the first shape

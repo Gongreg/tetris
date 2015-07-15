@@ -209,7 +209,7 @@ var Tetris;
         MainState.prototype.createEmptyShape = function (shapeName, x, y) {
             if (shapeName === void 0) { shapeName = ''; }
             if (x === void 0) { x = 4; }
-            if (y === void 0) { y = -1; }
+            if (y === void 0) { y = 1; }
             if (shapeName.length == 0) {
                 shapeName = this.getFromShapeStack();
             }
@@ -218,7 +218,7 @@ var Tetris;
         MainState.prototype.createNewShape = function (shapeName, x, y) {
             if (shapeName === void 0) { shapeName = ''; }
             if (x === void 0) { x = 4; }
-            if (y === void 0) { y = -1; }
+            if (y === void 0) { y = 1; }
             if (shapeName.length == 0) {
                 shapeName = this.getFromShapeStack();
             }
@@ -245,8 +245,8 @@ var Tetris;
             this.moveTimer = this.game.time.clock.createTimer('move', 0.1, 0);
             this.moveTimer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP, this.resetMoving, this);
             //board
-            this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.borders, Tetris.Config.offsetX, Tetris.Config.offsetY));
-            this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.board, Tetris.Config.offsetX + Tetris.Config.borderWidth, Tetris.Config.offsetY + Tetris.Config.borderWidth));
+            this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.borders, Tetris.Config.offsetX, 0));
+            this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.board, Tetris.Config.offsetX + Tetris.Config.borderWidth, Tetris.Config.borderWidth));
             this.board = new Tetris.Board();
             //drop the first shape
             this.createNewShape();

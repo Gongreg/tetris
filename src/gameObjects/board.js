@@ -10,7 +10,7 @@ var Tetris;
             this.width = Tetris.Config.boardWidth;
             //blocks array to keep track of blocks inside game
             this.blocks = [];
-            for (var i = -2; i < 20; i++) {
+            for (var i = 0; i < this.height; i++) {
                 this.blocks[i] = [];
             }
         }

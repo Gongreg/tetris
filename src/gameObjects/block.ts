@@ -18,6 +18,8 @@ module Tetris {
             this.x = x;
             this.y = y;
 
+            console.log(Config.offsetY);
+
             if (texture) {
                 this.sprite = new Kiwi.GameObjects.Sprite(
                     state,

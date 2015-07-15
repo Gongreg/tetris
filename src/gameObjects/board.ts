@@ -16,7 +16,7 @@ module Tetris {
 
         constructor()
         {
-            for (var i:number = -2; i < 20; i++) {
+            for (var i:number = 0; i < this.height; i++) {
                 this.blocks[i] = [];
             }
 
