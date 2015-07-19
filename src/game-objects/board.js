@@ -1,4 +1,4 @@
-/// <reference path="shape.ts" />
+/// <reference path="shapes/shape.ts" />
 /// <reference path="position.ts" />
 /// <reference path="../enums.ts" />
 /// <reference path="../config.ts" />

@@ -1,26 +1,35 @@
 /**
  * Created by Gytis on 2015-07-05.
  */
-/// <reference path="./gameObjects/shape.ts" />
+/// <reference path="./game-objects/shapes/shape.ts" />
 /// <reference path="../lib/kiwi.d.ts" />
 /// <reference path="config.ts" />
+/// <reference path="scoring-manager.ts" />
 
 module Tetris {
     export class Hud {
+        private scoringManager: ScoringManager;
         private state: Kiwi.State;
-        private score: Kiwi.GameObjects.TextField;
-        private currentScore: number = 0;
+        private scoreObject: Kiwi.GameObjects.TextField;
+        private levelObject: Kiwi.GameObjects.TextField;
+
         private nextShape: Shapes.Shape;
         private heldShape: Shapes.Shape;
-        constructor(state: Kiwi.State, score: Kiwi.GameObjects.TextField)
+
+        constructor(state: Kiwi.State, scoringManager: ScoringManager, level: Kiwi.GameObjects.TextField,  score: Kiwi.GameObjects.TextField)
         {
             this.state = state;
-            this.score = score;
+            this.levelObject = level;
+            this.scoreObject = score;
+            this.scoringManager = scoringManager;
         }
 
-        addScore(score: number) {
-            this.currentScore += score;
-            this.score.text = this.currentScore.toString();
+
+        updateScore()
+        {
+            var info = this.scoringManager.getInfo();
+            this.scoreObject.text = info.score.toString();
+            this.levelObject.text = info.level.toString();
         }
 
         static setUpSprite(shape: Shapes.Shape, shapeName, marginX, marginY) {
