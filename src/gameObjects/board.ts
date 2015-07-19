@@ -14,17 +14,20 @@ module Tetris {
         //blocks array to keep track of blocks inside game
         private blocks: Array<Array<Block>> = [];
 
-        constructor()
-        {
+        private highestPositions: Position[] = [];
+
+        constructor() {
             for (var i:number = 0; i < this.height; i++) {
                 this.blocks[i] = [];
             }
 
+            for (var i:number = 0; i < this.width; i++) {
+                this.highestPositions[i] = new Position(i, this.height);
+            }
         }
 
         //check if given positions are empty
-        public emptyPositions(positions: Position[])
-        {
+        public emptyPositions(positions: Position[]) {
 
             return positions.filter((position) => {
                     return position.x < 0
@@ -36,8 +39,7 @@ module Tetris {
         }
 
         //check blocks next to given ones are empty
-        public emptyDirection(blocks: Block[], direction: number)
-        {
+        public emptyDirection(blocks: Block[], direction: number) {
 
             return blocks.filter((block) => {
                     return (direction === Direction.Down && (block.y === this.height - 1 || this.blocks[block.y + 1][block.x] !== undefined))
@@ -46,11 +48,40 @@ module Tetris {
                 }).length === 0;
         }
 
-        //set status for blocks
-        public setBlocks(blocks: Block[], status: number)
+        private refreshHighestPosition(position: Position) {
+
+            this.highestPositions[position.x] =
+                this.highestPositions[position.x].isLower(position) ? position : this.highestPositions[position.x];
+        }
+
+        public refreshHighestPositions()
         {
+
+            this.highestPositions.forEach((highestPosition, column) => {
+                this.highestPositions[column].y = this.height;
+
+                for (var i = 0; i < this.height; i++) {
+                    if (this.blocks[i][column]) {
+                        this.highestPositions[column].y = i;
+                        break;
+                    }
+
+                }
+
+            });
+
+        }
+
+
+    //set status for blocks
+        public setBlocks(blocks: Block[], status: number = BlockStatus.Taken) {
             blocks.forEach((block) => {
                 this.blocks[block.y][block.x] = status === BlockStatus.Taken ? block : undefined;
+                if (status === BlockStatus.Taken) {
+                    this.refreshHighestPosition(block.getPosition());
+                } else {
+                    //this.setBlocks()
+                }
             });
 
             return this;
@@ -60,17 +91,21 @@ module Tetris {
         public checkRows(blocks: Block[]) {
             var rowsToClear: number[] = this.getRowsToClear(blocks);
 
-            this.clearRows(rowsToClear);
+            if (rowsToClear.length > 0) {
+                this.clearRows(rowsToClear);
 
-            //after clearing the rows, make other blocks fall down
-            this.fallBlocks(rowsToClear);
+                //after clearing the rows, make other blocks fall down
+                this.fallBlocks(rowsToClear);
+
+                this.refreshHighestPositions();
+            }
+
 
             return rowsToClear.length;
         }
 
         //find full rows
-        private getRowsToClear(blocks: Block[])
-        {
+        private getRowsToClear(blocks: Block[]) {
             //no duplicates
             var rowsToClear: number[] = R.uniq(
                 blocks
@@ -89,8 +124,7 @@ module Tetris {
             }, rowsToClear);
         }
 
-        private clearRows(rowNumbers: number[])
-        {
+        private clearRows(rowNumbers: number[]) {
             rowNumbers.forEach((rowNumber) => {
                 //destroy all blocks ion row
                 this.blocks[rowNumber].forEach((block) => {block.destroy();});
@@ -99,65 +133,41 @@ module Tetris {
             });
         }
 
-        private fallRowsBy(fromRow, toRow, lowerBy)
-        {
-            //first get all rows which need to be checked, reverse them (so we wouldnt overwrite blocks in board), then get all blocks in them and do make them go down
-            R.flatten(R.reverse(this.blocks.filter((blocks, index) => {
-                return index <= fromRow && index >= toRow;
-            }))).filter((block) => { return block !== undefined; }).forEach((block) => {
-                this.setBlocks([block], BlockStatus.Empty);
-                block.setPosition(block.x, block.y + lowerBy);
-                this.setBlocks([block], BlockStatus.Taken);
+        private fallBlocks(rowsToFall: number[]) {
+
+
+            rowsToFall.forEach((fromRow, index) => {
+
+                var lowerBy = index + 1;
+
+                //till what row to clear
+                var toRow: number = rowsToFall[lowerBy] ? rowsToFall[lowerBy] : 0;
+
+                var blocksToFall = R.flatten(
+                    R.reverse(
+                        this.blocks.filter((blocks, row) => {
+                            return row <= fromRow && row >= toRow;
+                        })
+                    )
+                ).filter((block) => { return block !== undefined; });
+
+                //first get all rows which need to be checked, reverse them (so we wouldnt overwrite blocks in board), then get all blocks in them and do make them go down
+                blocksToFall.forEach((block) => {
+                    this.setBlocks([block], BlockStatus.Empty);
+                    block.setPosition(block.x, block.y + lowerBy);
+                    this.setBlocks([block], BlockStatus.Taken);
+                });
             });
         }
 
-        private fallBlocks(rowsToFall: number[], lowerBy = 0)
-        {
-
-            //how many times are we still going to call this
-            var remainingRowsToClear = rowsToFall.slice(1);
-
-            //from which row to clear
-            var fromRow: number = rowsToFall[0];
-
-            //till what row to clear
-            var toRow: number = rowsToFall.length === 1 ? 0 : rowsToFall[1];
-
-            //how much block should fall down
-            lowerBy += 1;
-
-            this.fallRowsBy(fromRow, toRow, lowerBy);
-
-            if (remainingRowsToClear.length > 0) {
-                this.fallBlocks(remainingRowsToClear, lowerBy);
-            }
-        }
-
         //return number of rows to fall
-        findLowestPossible(blocks: Block[])
-        {
-            var rowsToFall : number = this.height;
+        public findDistanceToFall(blocks: Block[]) {
+            return blocks.reduce((rowsToFall, block) => {
 
-            for (var index in blocks) {
+                var distance: number = Math.sqrt(Math.pow(this.highestPositions[block.x].y - block.y, 2)) - 1;
 
-                var block: Block = blocks[index];
-
-                //get only lowest in blocks
-
-                for (var j: number = block.y + 1; j < this.height; j++) {
-                    if (this.blocks[j][block.x]) {
-                        break;
-                    }
-                }
-
-                var distance: number = Math.sqrt((j - block.y) * (j - block.y)) - 1;
-
-                if (distance !== 0 && distance < rowsToFall) {
-                    rowsToFall = j - block.y - 1;
-                }
-            }
-
-            return rowsToFall;
+                return distance < rowsToFall ? distance : rowsToFall;
+            }, this.height);
         }
     }
 }

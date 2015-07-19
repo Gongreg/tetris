@@ -44,14 +44,6 @@ var Tetris;
                     return block.x === column && block.y > row ? block.y : row;
                 }, blocks[0].y);
             };
-            //return lowest blocks
-            Shape.prototype.getLowestBlocks = function (blocks) {
-                var _this = this;
-                if (blocks === void 0) { blocks = this.blocks; }
-                return blocks.filter(function (block) {
-                    return block.y === _this.getRowOfLowestInColumn(block.x, blocks);
-                });
-            };
             //get blocks position
             Shape.prototype.getPositions = function (blocks) {
                 if (blocks === void 0) { blocks = this.blocks; }
@@ -69,6 +61,7 @@ var Tetris;
                     block.fall(amountOfTiles);
                 });
                 this.center.fall(amountOfTiles);
+                return this;
             };
             Shape.prototype.move = function (side) {
                 var _this = this;
@@ -79,6 +72,7 @@ var Tetris;
                     block.move(side);
                 });
                 this.center.move(side);
+                return this;
             };
             Shape.prototype.getRotations = function () {
                 return Shape.rotations;
@@ -96,17 +90,11 @@ var Tetris;
                 var xMargin = direction * rotations[this.currentRotation][this.currentTest][0];
                 var yMargin = direction * rotations[this.currentRotation][this.currentTest][1];
                 //set center positions, so we don't lose it during rotation
-                var nextCenter = {
-                    x: centerX + xMargin,
-                    y: centerY + yMargin
-                };
+                var nextCenter = new Tetris.Position(centerX + xMargin, centerY + yMargin);
                 this.blocks.forEach(function (block) {
                     var xDiff = direction * (block.x - centerX);
                     var yDiff = direction * (block.y - centerY);
-                    nextPositions.push({
-                        x: nextCenter.x - yDiff,
-                        y: nextCenter.y + xDiff
-                    });
+                    nextPositions.push(new Tetris.Position(nextCenter.x - yDiff, nextCenter.y + xDiff));
                 });
                 this.nextCenter = nextCenter;
                 this.nextPositions = nextPositions;
@@ -133,6 +121,7 @@ var Tetris;
                 if (this.currentRotation == -1) {
                     this.currentRotation = 3;
                 }
+                return this;
             };
             //rotations for J L T Z S Pieces
             Shape.rotations = [
@@ -212,6 +201,7 @@ var Tetris;
             }
             //No need to do anything
             ShapeO.prototype.rotate = function () {
+                return this;
             };
             //No need to do anything
             ShapeO.prototype.getNextRotation = function () {

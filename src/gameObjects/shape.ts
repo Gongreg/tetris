@@ -27,8 +27,8 @@ module Tetris {
             protected currentRotation: number = 0;
             protected currentTest: number = 0;
 
-            protected nextPositions: PositionI[] = [];
-            protected nextCenter: PositionI;
+            protected nextPositions: Position[] = [];
+            protected nextCenter: Position;
             protected direction: number;
 
             protected blocks: Block[] = [];
@@ -84,14 +84,6 @@ module Tetris {
                 )
             }
 
-            //return lowest blocks
-            public getLowestBlocks(blocks : Block[] = this.blocks) {
-
-                return blocks.filter((block)=>{
-                    return block.y === this.getRowOfLowestInColumn(block.x, blocks)
-                });
-            }
-
             //get blocks position
             public getPositions(blocks : Block[] = this.blocks)
             {
@@ -113,6 +105,7 @@ module Tetris {
 
                 this.center.fall(amountOfTiles);
 
+                return this;
             }
 
             move(side: number)
@@ -125,6 +118,8 @@ module Tetris {
                 });
 
                 this.center.move(side);
+
+                return this;
             }
 
             getRotations()
@@ -134,7 +129,7 @@ module Tetris {
 
             getNextRotation(direction: number)
             {
-                var nextPositions: PositionI[] = [];
+                var nextPositions: Position[] = [];
 
                 //if we checked all posibilities, return nothing
                 if (this.currentTest == 5) {
@@ -151,19 +146,19 @@ module Tetris {
                 var yMargin: number = direction * rotations[this.currentRotation][this.currentTest][1];
 
                 //set center positions, so we don't lose it during rotation
-                var nextCenter = {
-                    x: centerX + xMargin,
-                    y: centerY + yMargin
-                };
+                var nextCenter = new Position(
+                    centerX + xMargin,
+                    centerY + yMargin
+                );
 
                 this.blocks.forEach((block) => {
                     var xDiff: number = direction * (block.x - centerX);
                     var yDiff: number = direction * (block.y - centerY);
 
-                    nextPositions.push({
-                        x: nextCenter.x - yDiff,
-                        y: nextCenter.y + xDiff
-                    });
+                    nextPositions.push(new Position(
+                        nextCenter.x - yDiff,
+                        nextCenter.y + xDiff
+                    ));
 
                 });
 
@@ -203,6 +198,8 @@ module Tetris {
                 if (this.currentRotation == -1) {
                     this.currentRotation = 3;
                 }
+
+                return this;
             }
 
         }
@@ -305,6 +302,7 @@ module Tetris {
             //No need to do anything
             public rotate()
             {
+                return this;
             }
 
             //No need to do anything
@@ -322,7 +320,6 @@ module Tetris {
                     null
                 );
             }
-
 
         }
 

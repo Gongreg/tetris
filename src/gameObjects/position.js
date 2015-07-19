@@ -5,6 +5,9 @@ var Tetris;
             this.x = x;
             this.y = y;
         }
+        Position.prototype.isLower = function (position) {
+            return this.y > position.y;
+        };
         return Position;
     })();
     Tetris.Position = Position;

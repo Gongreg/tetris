@@ -1,14 +1,11 @@
 module Tetris {
-    export interface PositionI
-    {
-        x: number;
-        y: number;
-
-    }
-
-    export class Position implements PositionI {
+    export class Position {
 
         constructor(public x:number, public y:number) {}
+
+        public isLower(position : Position) {
+            return this.y > position.y;
+        }
 
     }
 

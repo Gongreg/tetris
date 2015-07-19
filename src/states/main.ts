@@ -3,6 +3,7 @@
  */
 /// <reference path="../../lib/kiwi.d.ts" />
 /// <reference path="../gameObjects/shape.ts" />
+/// <reference path="../gameObjects/ghost.ts" />
 /// <reference path="../gameObjects/board.ts" />
 /// <reference path="../enums.ts" />
 /// <reference path="../config.ts" />
@@ -15,6 +16,10 @@ module Tetris {
     {
 
         private currentShape: Shapes.Shape;
+        private ghost: Ghost;
+
+
+        private borders;
 
         private fallTimer: Kiwi.Time.Timer;
         private moveTimer: Kiwi.Time.Timer;
@@ -77,10 +82,9 @@ module Tetris {
             this.addImage('board', 'assets/img/board.png');
             this.addImage('borders', 'assets/img/borders.png');
 
-            for (var index in this.blocks) {
-                var color : string = this.blocks[index];
-                this.addImage('block-'+ color, 'assets/img/block-'+ color +'.png');
-            }
+            this.blocks.forEach(color => this.addImage('block-'+ color, 'assets/img/block-'+ color +'.png'));
+
+            this.addImage('block-ghost', 'assets/img/block-ghost.png');
 
         }
 
@@ -98,6 +102,8 @@ module Tetris {
 
                 this.currentShape.move(direction);
 
+                this.ghost.setPositions(this.currentShape.getPositions(), this.board.findDistanceToFall(this.currentShape.getBlocks()));
+
                 this.moveTimer.start();
 
             }
@@ -111,7 +117,7 @@ module Tetris {
         rotate(direction: number)
         {
 
-            var positions: PositionI[] = this.currentShape.getNextRotation(direction);
+            var positions: Position[] = this.currentShape.getNextRotation(direction);
             var rotated: boolean = false;
             while (positions.length > 0) {
 
@@ -119,6 +125,7 @@ module Tetris {
                     rotated = true;
 
                     this.currentShape.rotate();
+                    this.ghost.setPositions(this.currentShape.getPositions(), this.board.findDistanceToFall(this.currentShape.getBlocks()));
 
                     break;
                 }
@@ -176,7 +183,7 @@ module Tetris {
             if (this.board.emptyPositions(this.currentShape.getPositions())) {
 
                 this.addChild(this.currentShape.getGameObject());
-
+                this.ghost.setPositions(this.currentShape.getPositions(), this.board.findDistanceToFall(this.currentShape.getBlocks()));
                 return;
             }
 
@@ -224,7 +231,7 @@ module Tetris {
         {
             if (this.spaceKey.isDown && !this.dropping) {
                 this.dropping = true;
-                var amountOfTiles: number = this.board.findLowestPossible(this.currentShape.getLowestBlocks());
+                var amountOfTiles: number = this.board.findDistanceToFall(this.currentShape.getBlocks());
 
                 this.fallDown(amountOfTiles, true);
 
@@ -309,7 +316,7 @@ module Tetris {
             this.currentShape = new Shapes[shapeName](this, x, y);
         }
 
-        createNewShape(shapeName: string = '', x: number = 4, y: number = 1)
+        createNewShape(shapeName: string = '', x: number = 4, y: number = 1, debug = false)
         {
 
             if (shapeName.length == 0) {
@@ -318,6 +325,10 @@ module Tetris {
 
 
             this.currentShape = new Shapes[shapeName](this, x, y);
+
+            if (debug) {
+                this.board.setBlocks(this.currentShape.getBlocks());
+            }
 
             this.addChild(this.currentShape.getGameObject());
         }
@@ -352,12 +363,31 @@ module Tetris {
             this.moveTimer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP, this.resetMoving, this);
 
             //board
-            this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.borders, Config.offsetX, 0));
+
+            var borders = new Kiwi.GameObjects.StaticImage(this, this.textures.borders, Config.offsetX, 0);
             this.addChild(new Kiwi.GameObjects.StaticImage(this, this.textures.board, Config.offsetX + Config.borderWidth, Config.borderWidth));
+            this.addChild(borders);
+
             this.board = new Board();
 
             //drop the first shape
             this.createNewShape();
+
+            ////numbers on sides of board
+            //for (var i: number = 0; i < 10; i++) {
+            //    var blockNumber = new Kiwi.GameObjects.TextField(this, i.toString(), 48 +  29 * i, 0, "#000000", 30);
+            //    this.addChild(blockNumber);
+            //}
+            //
+            //for (var i: number = 2; i < 22; i++) {
+            //    var blockNumber = new Kiwi.GameObjects.TextField(this, i.toString(), 4 , 4 + 29 * (i - 2), "#000000", 30);
+            //    this.addChild(blockNumber);
+            //}
+
+
+            this.ghost = new Ghost(this, this.currentShape.getPositions(), this.board.findDistanceToFall(this.currentShape.getBlocks()));
+
+            this.addChildBefore(this.ghost.getGameObject(), borders);
 
             //add drop timer
             this.fallTimer = this.game.time.clock.createTimer('fall', 0.5, 0);
