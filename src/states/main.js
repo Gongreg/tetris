@@ -167,6 +167,7 @@ var Tetris;
                 this.heldShape = this.currentShape.name;
                 this.currentShape.destroy();
                 this.createNewShape(true, heldShapeName);
+                this.hud.setNextShape(this.shapeStack.getNextShape());
                 this.hud.setHeldShape(this.heldShape);
                 this.ghost.setPosition(this.currentShape.getPositions(), this.board.findDistanceToFall(this.currentShape.getPositions()));
                 this.canHold = false;
