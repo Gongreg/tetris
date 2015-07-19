@@ -38,9 +38,17 @@ var Tetris;
         Block.prototype.getPosition = function () {
             return new Tetris.Position(this.x, this.y);
         };
-        Block.prototype.destroy = function () {
+        Block.prototype.destroy = function (animate) {
+            var _this = this;
+            if (animate === void 0) { animate = false; }
             if (this.sprite) {
-                this.sprite.destroy();
+                if (animate) {
+                    var tween = this.sprite.state.game.tweens.create(this.sprite);
+                    tween.to({ alpha: 0 }, Tetris.Config.animationTime, Kiwi.Animations.Tweens.Easing.Bounce.In, true).onComplete(function () { return _this.sprite.destroy(); }, this);
+                }
+                else {
+                    this.sprite.destroy();
+                }
             }
         };
         return Block;

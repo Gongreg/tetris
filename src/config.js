@@ -12,6 +12,7 @@ var Tetris;
         Config.boardWidthInPixels = Config.offsetX + Config.borderWidth * 2 + Config.boardWidth * Config.tileSize;
         Config.boardHeight = 22;
         Config.moveTimerRate = 0.1;
+        Config.animationTime = 300;
         return Config;
     })();
     Tetris.Config = Config;

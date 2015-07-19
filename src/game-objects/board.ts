@@ -93,11 +93,14 @@ module Tetris {
             if (rowsToClear.length > 0) {
                 this.clearRows(rowsToClear);
 
-                //after clearing the rows, make other blocks fall down
-                this.fallBlocks(rowsToClear);
+                setTimeout(() => {
+                    //after clearing the rows, make other blocks fall down
+                    this.fallBlocks(rowsToClear);
 
-                //refresh highest positions because some rows can get empty or some gaps can happen
-                this.refreshHighestPositions();
+                    //refresh highest positions because some rows can get empty or some gaps can happen
+                    this.refreshHighestPositions();
+                }, Config.animationTime);
+
             }
 
 
@@ -125,7 +128,8 @@ module Tetris {
         private clearRows(rowNumbers: number[]) {
             rowNumbers.forEach((rowNumber) => {
                 //destroy all blocks in row
-                this.blocks[rowNumber].forEach(block => block.destroy());
+                this.blocks[rowNumber].forEach(block => block.destroy(true));
+
                 //set all row empty
                 this.setBlocks(this.blocks[rowNumber], BlockStatus.Empty);
             });

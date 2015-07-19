@@ -9,5 +9,6 @@ module Tetris {
         static boardWidthInPixels: number = Config.offsetX + Config.borderWidth * 2 + Config.boardWidth * Config.tileSize;
         static boardHeight: number = 22;
         static moveTimerRate = 0.1;
+        static animationTime = 300;
     }
 }

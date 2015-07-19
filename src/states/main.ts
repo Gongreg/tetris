@@ -49,6 +49,10 @@ module Tetris {
         private hud: Hud;
         private scoringManager: ScoringManager;
 
+        private blockFallSound: Kiwi.Sound.Audio;
+
+        private animationsStarted: boolean = false;
+
         //block colors for sprite loading
         private blocks: string[] = [
             'blue',
@@ -71,6 +75,8 @@ module Tetris {
             this.blocks.forEach(color => this.addImage('block-'+ color, 'assets/img/block-'+ color +'.png'));
 
             this.addImage('block-ghost', 'assets/img/block-ghost.png');
+
+            this.addAudio('blockFallSound', 'assets/sound/block-fall.mp3');
 
         }
 
@@ -117,39 +123,10 @@ module Tetris {
 
 
             return rotated;
-
         }
 
-        //drop down event
-        fallDown(amountOfTiles: number = 1, forceCheck: boolean = false)
-        {
-            //try to fall down
-            //amount of Tiles specified must be empty, because here I don't check tiles below
-            if (this.board.emptyDirection(this.currentShape.getBlocks(), Direction.Down)) {
-
-                //if soft drop is being done, add score
-                if (this.fallTimer.delay === 0.01) {
-                    this.scoringManager.addSoftDrop();
-                }
-
-                this.currentShape.fall(amountOfTiles);
-
-                if (!forceCheck) {
-                    return;
-                }
-
-            }
-
-            //if shape can't fall down, set blocks into board and create new shape unless it is gg
-
-            //set blocks as used, since we are creating new shape
-            this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Taken);
-
-            ////try to clear the rows in which blocks exist
-            var rowsCleared = this.board.checkRows(this.currentShape.getBlocks());
-
-            this.scoringManager.addRowsCleared(rowsCleared);
-
+        afterShapeLanded() {
+            this.animationsStarted = false;
             //create empty shape
             this.createNewShape();
 
@@ -167,10 +144,51 @@ module Tetris {
                 return;
             }
 
-
-
             this.game.states.switchState('gameOver', null, null, this.scoringManager.getInfo());
-            //if unable to create new shape gg
+        }
+
+        //drop down event
+        fallDown(amountOfTiles: number = 1, forceCheck: boolean = false)
+        {
+            if (this.animationsStarted) {
+                return;
+            }
+            //try to fall down
+            //amount of Tiles specified must be empty, because here I don't check tiles below
+            if (this.board.emptyDirection(this.currentShape.getBlocks(), Direction.Down)) {
+
+                //if soft drop is being done, add score
+                if (this.fallTimer.delay === 0.01) {
+                    this.scoringManager.addSoftDrop();
+                }
+
+                this.currentShape.fall(amountOfTiles);
+
+                if (!forceCheck) {
+                    return;
+                }
+
+            }
+
+            this.blockFallSound.play();
+
+            //if shape can't fall down, set blocks into board and create new shape unless it is gg
+
+            //set blocks as used, since we are creating new shape
+            this.board.setBlocks(this.currentShape.getBlocks(), BlockStatus.Taken);
+
+            ////try to clear the rows in which blocks exist
+            var rowsCleared = this.board.checkRows(this.currentShape.getBlocks());
+
+            this.scoringManager.addRowsCleared(rowsCleared);
+
+            if (rowsCleared) {
+                this.animationsStarted = true;
+                setTimeout(() => this.afterShapeLanded(), Config.animationTime);
+            } else {
+                this.afterShapeLanded();
+            }
+
         }
 
         rotationControls()
@@ -321,27 +339,35 @@ module Tetris {
             var level = new Kiwi.GameObjects.TextField(this, "0", Config.boardWidthInPixels, 85, "#000", 24);
             this.addChild(level);
 
+            var linesText = new Kiwi.GameObjects.TextField(this, "Lines", Config.boardWidthInPixels, 110, "#000", 24);
+            this.addChild(linesText);
+
+            var lines = new Kiwi.GameObjects.TextField(this, "0", Config.boardWidthInPixels, 135, "#000", 24);
+            this.addChild(lines);
+
             var boardTiles = new Kiwi.GameObjects.StaticImage(this, this.textures.board, Config.offsetX + Config.borderWidth, Config.borderHeight);
             this.addChild(boardTiles);
 
             var borders = new Kiwi.GameObjects.StaticImage(this, this.textures.borders, Config.offsetX, 0);
             this.addChild(borders);
 
-            var nextShapeText = new Kiwi.GameObjects.TextField(this, "Next", Config.boardWidthInPixels, 120, "#000", 24);
+            var nextShapeText = new Kiwi.GameObjects.TextField(this, "Next", Config.boardWidthInPixels, 170, "#000", 24);
             this.addChild(nextShapeText);
 
-            var nextShapeBorders = new Kiwi.GameObjects.StaticImage(this, this.textures.hudBorders, Config.boardWidthInPixels + 20, 185);
+            var nextShapeBorders = new Kiwi.GameObjects.StaticImage(this, this.textures.hudBorders, Config.boardWidthInPixels + 20, 235);
             nextShapeBorders.scaleX = 2.5;
             nextShapeBorders.scaleY = 3.5;
             this.addChild(nextShapeBorders);
 
-            var heldShapeText = new Kiwi.GameObjects.TextField(this, "Hold", Config.boardWidthInPixels, 300, "#000", 24);
+            var heldShapeText = new Kiwi.GameObjects.TextField(this, "Hold", Config.boardWidthInPixels, 320, "#000", 24);
             this.addChild(heldShapeText);
 
-            var heldShapeBorders = new Kiwi.GameObjects.StaticImage(this, this.textures.hudBorders, Config.boardWidthInPixels + 20, 365);
+            var heldShapeBorders = new Kiwi.GameObjects.StaticImage(this, this.textures.hudBorders, Config.boardWidthInPixels + 20, 385);
             heldShapeBorders.scaleX = 2.5;
             heldShapeBorders.scaleY = 3.5;
             this.addChild(heldShapeBorders);
+
+            this.blockFallSound = new Kiwi.Sound.Audio(this.game, 'blockFallSound', 1, false);
 
 
             //move timer for limiting move amount
@@ -357,7 +383,7 @@ module Tetris {
             this.shapeStack = new Shapes.ShapeStack(this);
 
             this.scoringManager = new ScoringManager(1);
-            this.hud = new Hud(this, this.scoringManager, level, score);
+            this.hud = new Hud(this, this.scoringManager, level, score, lines);
 
             //drop the first shape
             this.createNewShape(true);

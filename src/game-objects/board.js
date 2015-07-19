@@ -64,13 +64,16 @@ var Tetris;
         };
         //check for rows to clear and return amount of cleared rows
         Board.prototype.checkRows = function (blocks) {
+            var _this = this;
             var rowsToClear = this.getRowsToClear(blocks);
             if (rowsToClear.length > 0) {
                 this.clearRows(rowsToClear);
-                //after clearing the rows, make other blocks fall down
-                this.fallBlocks(rowsToClear);
-                //refresh highest positions because some rows can get empty or some gaps can happen
-                this.refreshHighestPositions();
+                setTimeout(function () {
+                    //after clearing the rows, make other blocks fall down
+                    _this.fallBlocks(rowsToClear);
+                    //refresh highest positions because some rows can get empty or some gaps can happen
+                    _this.refreshHighestPositions();
+                }, Tetris.Config.animationTime);
             }
             return rowsToClear.length;
         };
@@ -92,7 +95,7 @@ var Tetris;
             var _this = this;
             rowNumbers.forEach(function (rowNumber) {
                 //destroy all blocks in row
-                _this.blocks[rowNumber].forEach(function (block) { return block.destroy(); });
+                _this.blocks[rowNumber].forEach(function (block) { return block.destroy(true); });
                 //set all row empty
                 _this.setBlocks(_this.blocks[rowNumber], 0 /* Empty */);
             });

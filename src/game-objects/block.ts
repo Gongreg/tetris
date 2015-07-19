@@ -69,10 +69,18 @@ module Tetris {
             return new Position(this.x, this.y);
         }
 
-        public destroy()
+        public destroy(animate = false)
         {
             if (this.sprite) {
-                this.sprite.destroy();
+
+                if (animate) {
+                    var tween = this.sprite.state.game.tweens.create(this.sprite);
+                    tween.to({alpha: 0}, Config.animationTime, Kiwi.Animations.Tweens.Easing.Bounce.In, true).onComplete(() => this.sprite.destroy(), this);
+                } else {
+                    this.sprite.destroy();
+                }
+
+
             }
         }
     }

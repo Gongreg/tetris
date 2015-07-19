@@ -11,8 +11,6 @@ module Tetris {
 
         update()
         {
-            console.log(this.game.input.mouse.isDown);
-
             if (this.game.input.mouse.isDown) {
                 this.game.states.switchState('main');
             }
