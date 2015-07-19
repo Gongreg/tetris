@@ -160,11 +160,16 @@ module Tetris {
                 this.canHold = true;
 
                 this.addChild(this.currentShape.getGameObject());
+
+
+                this.hud.setNextShape(this.shapeStack.getNextShape());
                 this.ghost.setPosition(this.currentShape.getPositions(), this.board.findDistanceToFall(this.currentShape.getPositions()));
                 return;
             }
 
-            console.log('gg');
+
+
+            this.game.states.switchState('gameOver', null, null, this.scoringManager.getInfo());
             //if unable to create new shape gg
         }
 
@@ -282,7 +287,6 @@ module Tetris {
                 this.board.setBlocks(this.currentShape.getBlocks());
             }
 
-            this.hud.setNextShape(this.shapeStack.getNextShape());
 
         }
 
@@ -355,6 +359,8 @@ module Tetris {
 
             //drop the first shape
             this.createNewShape(true);
+
+            this.hud.setNextShape(this.shapeStack.getNextShape());
 
             //set its ghost
             this.ghost = new Ghost(this, this.currentShape.getPositions(), this.board.findDistanceToFall(this.currentShape.getPositions()));

@@ -107,10 +107,11 @@ var Tetris;
                 //allow to hold shape again
                 this.canHold = true;
                 this.addChild(this.currentShape.getGameObject());
+                this.hud.setNextShape(this.shapeStack.getNextShape());
                 this.ghost.setPosition(this.currentShape.getPositions(), this.board.findDistanceToFall(this.currentShape.getPositions()));
                 return;
             }
-            console.log('gg');
+            this.game.states.switchState('gameOver', null, null, this.scoringManager.getInfo());
             //if unable to create new shape gg
         };
         MainState.prototype.rotationControls = function () {
@@ -195,7 +196,6 @@ var Tetris;
             if (debug) {
                 this.board.setBlocks(this.currentShape.getBlocks());
             }
-            this.hud.setNextShape(this.shapeStack.getNextShape());
         };
         MainState.prototype.create = function () {
             var _this = this;
@@ -249,6 +249,7 @@ var Tetris;
             this.hud = new Tetris.Hud(this, this.scoringManager, level, score);
             //drop the first shape
             this.createNewShape(true);
+            this.hud.setNextShape(this.shapeStack.getNextShape());
             //set its ghost
             this.ghost = new Tetris.Ghost(this, this.currentShape.getPositions(), this.board.findDistanceToFall(this.currentShape.getPositions()));
             this.addChildBefore(this.ghost.getGameObject(), borders);

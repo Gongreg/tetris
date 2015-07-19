@@ -57,6 +57,8 @@ module Tetris {
 
         setNextShape(shapeName: string) {
 
+            console.log('called');
+
             if (this.nextShape) {
                 this.nextShape.getGameObject().destroy();
             }
