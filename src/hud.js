@@ -19,7 +19,7 @@ var Tetris;
             var info = this.scoringManager.getInfo();
             this.scoreObject.text = info.score.toString();
             this.levelObject.text = info.level.toString();
-            this.linesObject = info.lines.toString();
+            this.linesObject.text = info.lines.toString();
         };
         Hud.setUpSprite = function (shape, shapeName, marginX, marginY) {
             var gameObject = shape.getGameObject();
@@ -35,6 +35,11 @@ var Tetris;
             gameObject.y = marginY;
             gameObject.x = marginX;
             gameObject.scale = 0.7;
+            gameObject.getAllChildren().forEach(function (sprite) {
+                sprite.alpha = 0;
+                var tween = sprite.state.game.tweens.create(sprite);
+                tween.to({ alpha: 1 }, Tetris.Config.animationTime, Kiwi.Animations.Tweens.Easing.Sinusoidal.In, true);
+            });
             return gameObject;
         };
         Hud.prototype.setNextShape = function (shapeName) {

@@ -17,7 +17,7 @@ module Tetris {
         private nextShape: Shapes.Shape;
         private heldShape: Shapes.Shape;
 
-        constructor(state: Kiwi.State, scoringManager: ScoringManager, level: Kiwi.GameObjects.TextField,  score: Kiwi.GameObjects.TextField, lines: Kiwi.GameObjects.TextFiel)
+        constructor(state: Kiwi.State, scoringManager: ScoringManager, level: Kiwi.GameObjects.TextField,  score: Kiwi.GameObjects.TextField, lines: Kiwi.GameObjects.TextField)
         {
             this.state = state;
             this.levelObject = level;
@@ -32,7 +32,7 @@ module Tetris {
             var info = this.scoringManager.getInfo();
             this.scoreObject.text = info.score.toString();
             this.levelObject.text = info.level.toString();
-            this.linesObject = info.lines.toString();
+            this.linesObject.text = info.lines.toString();
         }
 
         static setUpSprite(shape: Shapes.Shape, shapeName, marginX, marginY) {
@@ -54,6 +54,11 @@ module Tetris {
             gameObject.y = marginY;
             gameObject.x = marginX;
             gameObject.scale = 0.7;
+            gameObject.getAllChildren().forEach((sprite: Kiwi.GameObjects.Sprite) => {
+                sprite.alpha = 0;
+                var tween = sprite.state.game.tweens.create(sprite);
+                tween.to({alpha: 1}, Config.animationTime, Kiwi.Animations.Tweens.Easing.Sinusoidal.In, true);
+            });
 
             return gameObject;
         }

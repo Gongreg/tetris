@@ -28,7 +28,7 @@ module Tetris {
 
             this.addChild(new Kiwi.GameObjects.TextField(this, 'Play again', Config.boardWidthInPixels / 2, 300, "#000", 24));
 
-            this.getAllChildren().forEach(children => children.textAlign = 'center');
+            this.getAllChildren().forEach((children: Kiwi.GameObjects.TextField) => children.textAlign = 'center');
 
         }
     }

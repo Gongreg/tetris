@@ -25,4 +25,4 @@ var Tetris;
         Shapes.ShapeDot = ShapeDot;
     })(Shapes = Tetris.Shapes || (Tetris.Shapes = {}));
 })(Tetris || (Tetris = {}));
-//# sourceMappingURL=shapeDot.js.map
+//# sourceMappingURL=shape-dot.js.map
