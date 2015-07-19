@@ -39,6 +39,9 @@ var Tetris;
             Shape.prototype.getBlocks = function () {
                 return this.blocks;
             };
+            Shape.prototype.destroy = function () {
+                this.getBlocks().forEach(function (block) { return block.destroy(); });
+            };
             Shape.prototype.getRowOfLowestInColumn = function (column, blocks) {
                 return blocks.reduce(function (row, block) {
                     return block.x === column && block.y > row ? block.y : row;
@@ -105,6 +108,10 @@ var Tetris;
             };
             Shape.prototype.rotate = function () {
                 var _this = this;
+                //if we want to ratate without checking
+                if (!this.nextCenter) {
+                    this.getNextRotation(1);
+                }
                 this.center.setPosition(this.nextCenter.x, this.nextCenter.y);
                 this.blocks.forEach(function (block, index) {
                     //if c block is in center position, it is already set
@@ -139,6 +146,7 @@ var Tetris;
             function ShapeI(state, x, y) {
                 _super.call(this, state);
                 this.blockColor = 'cyan';
+                this.name = 'ShapeI';
                 this.addBlock(this.blockColor, x - 1, y);
                 this.addBlock(this.blockColor, x, y);
                 this.addBlock(this.blockColor, x + 1, y);
@@ -167,6 +175,7 @@ var Tetris;
             function ShapeJ(state, x, y) {
                 _super.call(this, state);
                 this.blockColor = 'blue';
+                this.name = 'ShapeJ';
                 this.addBlock(this.blockColor, x - 1, y - 1);
                 this.addBlock(this.blockColor, x - 1, y);
                 this.addBlock(this.blockColor, x, y, true);
@@ -180,6 +189,7 @@ var Tetris;
             function ShapeL(state, x, y) {
                 _super.call(this, state);
                 this.blockColor = 'orange';
+                this.name = 'ShapeL';
                 this.addBlock(this.blockColor, x - 1, y);
                 this.addBlock(this.blockColor, x, y, true);
                 this.addBlock(this.blockColor, x + 1, y);
@@ -193,6 +203,7 @@ var Tetris;
             function ShapeO(state, x, y) {
                 _super.call(this, state);
                 this.blockColor = 'yellow';
+                this.name = 'ShapeO';
                 this.addBlock(this.blockColor, x, y - 1);
                 this.addBlock(this.blockColor, x, y);
                 this.addBlock(this.blockColor, x + 1, y - 1);
@@ -218,6 +229,7 @@ var Tetris;
             function ShapeS(state, x, y) {
                 _super.call(this, state);
                 this.blockColor = 'green';
+                this.name = 'ShapeS';
                 this.addBlock(this.blockColor, x - 1, y);
                 this.addBlock(this.blockColor, x, y, true);
                 this.addBlock(this.blockColor, x, y - 1);
@@ -231,6 +243,7 @@ var Tetris;
             function ShapeT(state, x, y) {
                 _super.call(this, state);
                 this.blockColor = 'purple';
+                this.name = 'ShapeT';
                 this.addBlock(this.blockColor, x - 1, y);
                 this.addBlock(this.blockColor, x, y, true);
                 this.addBlock(this.blockColor, x, y - 1);
@@ -244,6 +257,7 @@ var Tetris;
             function ShapeZ(state, x, y) {
                 _super.call(this, state);
                 this.blockColor = 'red';
+                this.name = 'ShapeZ';
                 this.addBlock(this.blockColor, x - 1, y - 1);
                 this.addBlock(this.blockColor, x, y - 1);
                 this.addBlock(this.blockColor, x, y, true);
@@ -257,6 +271,7 @@ var Tetris;
             function ShapeDot(state, x, y) {
                 _super.call(this, state);
                 this.blockColor = 'red';
+                this.name = 'ShapeDot';
                 this.addBlock(this.blockColor, x, y, true);
             }
             return ShapeDot;

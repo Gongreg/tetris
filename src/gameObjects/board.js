@@ -35,11 +35,14 @@ var Tetris;
         Board.prototype.refreshHighestPosition = function (position) {
             this.highestPositions[position.x] = this.highestPositions[position.x].isLower(position) ? position : this.highestPositions[position.x];
         };
-        Board.prototype.refreshHighestPositions = function () {
+        Board.prototype.refreshHighestPositions = function (positions) {
             var _this = this;
+            if (positions === void 0) { positions = []; }
             this.highestPositions.forEach(function (highestPosition, column) {
                 _this.highestPositions[column].y = _this.height;
-                for (var i = 0; i < _this.height; i++) {
+                var from = positions.filter(function (position) { return position.x == column; }).map(function (position) { return position.y; })[0];
+                from = from ? from : 0;
+                for (var i = from; i < _this.height; i++) {
                     if (_this.blocks[i][column]) {
                         _this.highestPositions[column].y = i;
                         break;
@@ -56,8 +59,6 @@ var Tetris;
                 if (status === 1 /* Taken */) {
                     _this.refreshHighestPosition(block.getPosition());
                 }
-                else {
-                }
             });
             return this;
         };
@@ -68,6 +69,7 @@ var Tetris;
                 this.clearRows(rowsToClear);
                 //after clearing the rows, make other blocks fall down
                 this.fallBlocks(rowsToClear);
+                //refresh highest positions because some rows can get empty or some gaps can happen
                 this.refreshHighestPositions();
             }
             return rowsToClear.length;
@@ -77,12 +79,10 @@ var Tetris;
             var _this = this;
             //no duplicates
             var rowsToClear = R.uniq(blocks.filter(function (block) {
-                //only if full row
+                //only if full row (all blocks set and none of them are undefined)
                 return (_this.blocks[block.y].length === _this.width && !R.contains(undefined, _this.blocks[block.y]));
-            }).map(function (block) {
                 //only return rows
-                return block.y;
-            }));
+            }).map(function (block) { return block.y; }));
             //reverse sort
             return R.sort(function (a, b) {
                 return b - a;
@@ -91,10 +91,8 @@ var Tetris;
         Board.prototype.clearRows = function (rowNumbers) {
             var _this = this;
             rowNumbers.forEach(function (rowNumber) {
-                //destroy all blocks ion row
-                _this.blocks[rowNumber].forEach(function (block) {
-                    block.destroy();
-                });
+                //destroy all blocks in row
+                _this.blocks[rowNumber].forEach(function (block) { return block.destroy(); });
                 //set all row empty
                 _this.setBlocks(_this.blocks[rowNumber], 0 /* Empty */);
             });
@@ -105,11 +103,10 @@ var Tetris;
                 var lowerBy = index + 1;
                 //till what row to clear
                 var toRow = rowsToFall[lowerBy] ? rowsToFall[lowerBy] : 0;
+                //flatten arrays into one
                 var blocksToFall = R.flatten(R.reverse(_this.blocks.filter(function (blocks, row) {
                     return row <= fromRow && row >= toRow;
-                }))).filter(function (block) {
-                    return block !== undefined;
-                });
+                }))).filter(function (block) { return block !== undefined; });
                 //first get all rows which need to be checked, reverse them (so we wouldnt overwrite blocks in board), then get all blocks in them and do make them go down
                 blocksToFall.forEach(function (block) {
                     _this.setBlocks([block], 0 /* Empty */);
@@ -119,10 +116,11 @@ var Tetris;
             });
         };
         //return number of rows to fall
-        Board.prototype.findDistanceToFall = function (blocks) {
+        Board.prototype.findDistanceToFall = function (positions) {
             var _this = this;
-            return blocks.reduce(function (rowsToFall, block) {
-                var distance = Math.sqrt(Math.pow(_this.highestPositions[block.x].y - block.y, 2)) - 1;
+            this.refreshHighestPositions(positions);
+            return positions.reduce(function (rowsToFall, position) {
+                var distance = Math.sqrt(Math.pow(_this.highestPositions[position.x].y - position.y, 2)) - 1;
                 return distance < rowsToFall ? distance : rowsToFall;
             }, this.height);
         };

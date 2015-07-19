@@ -11,6 +11,8 @@ module Tetris {
         export class Shape
         {
 
+            public name: string;
+
             protected state: Kiwi.State;
 
             protected gameObject : Kiwi.Group;
@@ -33,7 +35,7 @@ module Tetris {
 
             protected blocks: Block[] = [];
 
-            protected center: Block;
+            public center: Block;
 
 
             constructor(state: Kiwi.State)
@@ -75,6 +77,11 @@ module Tetris {
             public getBlocks()
             {
                 return this.blocks;
+            }
+
+            public destroy()
+            {
+                this.getBlocks().forEach(block => block.destroy());
             }
 
             private getRowOfLowestInColumn(column, blocks) {
@@ -175,6 +182,11 @@ module Tetris {
             rotate()
             {
 
+                //if we want to ratate without checking
+                if (!this.nextCenter) {
+                    this.getNextRotation(1);
+                }
+
                 this.center.setPosition(this.nextCenter.x, this.nextCenter.y);
 
                 this.blocks.forEach((block, index) => {
@@ -223,6 +235,7 @@ module Tetris {
             constructor(state: Kiwi.State, x : number, y : number)
             {
                 super(state);
+                this.name = 'ShapeI';
                 this.addBlock(this.blockColor, x-1, y);
                 this.addBlock(this.blockColor, x,   y);
                 this.addBlock(this.blockColor, x+1, y);
@@ -241,7 +254,7 @@ module Tetris {
 
             protected addCenter(x: number, y: number)
             {
-                this.center =  new Block(
+                this.center = new Block(
                     x,
                     y,
                     this.state,
@@ -258,7 +271,7 @@ module Tetris {
             constructor(state: Kiwi.State, x : number, y : number)
             {
                 super(state);
-
+                this.name = 'ShapeJ';
                 this.addBlock(this.blockColor, x-1, y-1);
                 this.addBlock(this.blockColor, x-1, y);
                 this.addBlock(this.blockColor, x,   y, true);
@@ -276,6 +289,7 @@ module Tetris {
             constructor(state: Kiwi.State, x : number, y : number)
             {
                 super(state);
+                this.name = 'ShapeL';
                 this.addBlock(this.blockColor, x-1, y);
                 this.addBlock(this.blockColor, x,   y, true);
                 this.addBlock(this.blockColor, x+1, y);
@@ -292,6 +306,7 @@ module Tetris {
             constructor(state: Kiwi.State, x : number, y : number)
             {
                 super(state);
+                this.name = 'ShapeO';
                 this.addBlock(this.blockColor, x,   y - 1);
                 this.addBlock(this.blockColor, x,   y);
                 this.addBlock(this.blockColor, x+1, y - 1);
@@ -330,6 +345,7 @@ module Tetris {
             constructor(state: Kiwi.State, x : number, y : number)
             {
                 super(state);
+                this.name = 'ShapeS';
                 this.addBlock(this.blockColor, x-1, y);
                 this.addBlock(this.blockColor, x,   y, true);
                 this.addBlock(this.blockColor, x,   y-1);
@@ -346,6 +362,7 @@ module Tetris {
             constructor(state: Kiwi.State, x : number, y : number)
             {
                 super(state);
+                this.name = 'ShapeT';
                 this.addBlock(this.blockColor, x-1, y);
                 this.addBlock(this.blockColor, x,   y, true);
                 this.addBlock(this.blockColor, x,   y-1);
@@ -362,6 +379,7 @@ module Tetris {
             constructor(state: Kiwi.State, x : number, y : number)
             {
                 super(state);
+                this.name = 'ShapeZ';
                 this.addBlock(this.blockColor, x-1, y-1);
                 this.addBlock(this.blockColor, x,   y-1);
                 this.addBlock(this.blockColor, x,   y, true);
@@ -378,6 +396,7 @@ module Tetris {
             constructor(state: Kiwi.State, x : number, y : number)
             {
                 super(state);
+                this.name = 'ShapeDot';
                 this.addBlock(this.blockColor, x,   y, true);
 
             }
