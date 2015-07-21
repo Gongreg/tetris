@@ -129,7 +129,6 @@ module Tetris {
             this.animationsStarted = false;
             //create empty shape
             this.createNewShape();
-
             //if we can create shape add it into the game
             if (this.board.emptyPositions(this.currentShape.getPositions())) {
 
@@ -305,6 +304,9 @@ module Tetris {
         {
 
             this.currentShape = this.shapeStack.createNewShape(addToGame, shapeName, x, y);
+
+            //always refresh board, because sometimes bug can occur. Most likely because of setTimeouts. I don't like 'em. :(
+            this.board.refreshHighestPositions();
 
             if (debug) {
                 this.board.setBlocks(this.currentShape.getBlocks());

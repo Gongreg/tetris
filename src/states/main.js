@@ -212,6 +212,8 @@ var Tetris;
             if (y === void 0) { y = 1; }
             if (debug === void 0) { debug = false; }
             this.currentShape = this.shapeStack.createNewShape(addToGame, shapeName, x, y);
+            //always refresh board, because sometimes bug can occur. Most likely because of setTimeouts. I don't like 'em. :(
+            this.board.refreshHighestPositions();
             if (debug) {
                 this.board.setBlocks(this.currentShape.getBlocks());
             }
