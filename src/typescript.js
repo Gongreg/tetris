@@ -52,7 +52,7 @@ var Tetris;
             _super.apply(this, arguments);
         }
         MenuState.prototype.update = function () {
-            if (this.game.input.mouse.isDown) {
+            if (this.game.input.mouse.isDown || this.startKey.isDown) {
                 this.game.states.switchState('main');
             }
         };
@@ -72,6 +72,7 @@ var Tetris;
             this.addChild(new Kiwi.GameObjects.TextField(this, "or by dragging on screen", Tetris.Config.boardWidthInPixels / 2, 480, "#000", 20));
             this.addChild(new Kiwi.GameObjects.TextField(this, "Click on screen to play", Tetris.Config.boardWidthInPixels / 2, 510, "#000", 25));
             this.getAllChildren().forEach(function (children) { return children.textAlign = 'center'; });
+            this.startKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.SPACEBAR);
         };
         return MenuState;
     })(Kiwi.State);
@@ -544,9 +545,6 @@ var Tetris;
                 if (newPosition < 0) {
                     newDistanceFromCenter = distanceFromCenter - newPosition;
                 }
-                if (newPosition > 8) {
-                    console.log(newPosition);
-                }
                 if (newPosition > _this.width - 1) {
                     newDistanceFromCenter = distanceFromCenter - (newPosition - (_this.width - 1));
                 }
@@ -713,8 +711,6 @@ var Tetris;
             this.rotationDirection = 0;
             //dropping
             this.dropping = false;
-            this.lastMousePosition = -1;
-            this.usesScreenControls = false;
             this.animationsStarted = false;
             //block colors for sprite loading
             this.blocks = [
@@ -740,24 +736,24 @@ var Tetris;
         };
         MainState.prototype.moveControls = function () {
             if (this.boardSprite.input.withinBounds) {
-                this.usesScreenControls = true;
                 var pointerPosition = Math.trunc((this.game.input.x - Tetris.Config.offsetX - Tetris.Config.borderWidth) / (Tetris.Config.tileSize - 1));
-                if (this.lastMousePosition !== pointerPosition) {
-                    var distanceFromCenter = Math.round(pointerPosition - this.currentShape.center.x) - 1;
-                    console.log('pp: ' + pointerPosition);
-                    if (this.currentShape.currentRotation == 3) {
-                        distanceFromCenter++;
-                    }
-                    console.log('dfc: ' + distanceFromCenter);
-                    var checkedCenterPosition = this.board.findValidPosition(distanceFromCenter, this.currentShape.getPositions());
-                    console.log('ccP: ' + checkedCenterPosition);
-                    this.lastMousePosition = pointerPosition;
-                    this.currentShape.setByPointerPosition(checkedCenterPosition);
-                    this.ghost.setPosition(this.currentShape.getPositions(), this.board.findDistanceToFall(this.currentShape.getPositions()));
-                    return;
+                var distanceFromCenter = Math.trunc(pointerPosition - this.currentShape.center.x);
+                if (this.currentShape.name == 'ShapeI' || this.currentShape.name == 'ShapeO') {
+                    distanceFromCenter = Math.round(pointerPosition - this.currentShape.center.x) - 1;
                 }
+                //shapeI doesnt like rotation too
+                if (this.currentShape.name == 'ShapeI' && this.currentShape.currentRotation == 3) {
+                    distanceFromCenter++;
+                }
+                //something screws up with rotation 3.
+                if (this.currentShape.currentRotation == 3 && pointerPosition == 9) {
+                    distanceFromCenter++;
+                }
+                var checkedCenterPosition = this.board.findValidPosition(distanceFromCenter, this.currentShape.getPositions());
+                this.currentShape.setByPointerPosition(checkedCenterPosition);
+                this.ghost.setPosition(this.currentShape.getPositions(), this.board.findDistanceToFall(this.currentShape.getPositions()));
+                return;
             }
-            this.usesScreenControls = false;
             var left = this.leftKey.isDown || this.leftKeyScreen.isDown;
             var right = this.rightKey.isDown || this.rightKeyScreen.isDown;
             var direction = right ? Tetris.Direction.Right : Tetris.Direction.Left;
@@ -1013,7 +1009,7 @@ var Tetris;
             this.scoringManager = new Tetris.ScoringManager(1);
             this.hud = new Tetris.Hud(this, this.scoringManager, level, score, lines);
             //drop the first shape
-            this.createNewShape(true, 'ShapeI');
+            this.createNewShape(true);
             this.hud.setNextShape(this.shapeStack.getNextShape());
             //set its ghost
             this.ghost = new Tetris.Ghost(this, this.currentShape.getPositions(), this.board.findDistanceToFall(this.currentShape.getPositions()));

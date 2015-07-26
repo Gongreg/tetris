@@ -63,9 +63,6 @@ module Tetris {
         private scoringManager: ScoringManager;
 
         private boardSprite: Kiwi.GameObjects.Sprite;
-        private lastMousePosition: number = -1;
-        private usesScreenControls = false;
-
 
         private animationsStarted: boolean = false;
 
@@ -100,32 +97,35 @@ module Tetris {
         moveControls() {
 
             if (this.boardSprite.input.withinBounds) {
-                this.usesScreenControls = true;
+
                 var pointerPosition: number = Math.trunc((this.game.input.x - Config.offsetX - Config.borderWidth) / (Config.tileSize - 1));
-
-                if (this.lastMousePosition !== pointerPosition) {
-
-                    var distanceFromCenter = Math.round(pointerPosition - this.currentShape.center.x) - 1;
-
-                    //something screws up with rotation on I shape.
-                    if (this.currentShape.currentRotation == 3) {
-                        distanceFromCenter++;
-                    }
+                var distanceFromCenter = Math.trunc(pointerPosition - this.currentShape.center.x);
 
 
-                    var checkedCenterPosition: number = this.board.findValidPosition(distanceFromCenter, this.currentShape.getPositions());
+                if (this.currentShape.name == 'ShapeI' || this.currentShape.name == 'ShapeO') {
+                    distanceFromCenter = Math.round(pointerPosition - this.currentShape.center.x) - 1;
+                }
 
-                    this.lastMousePosition = pointerPosition;
+                //shapeI doesnt like rotation too
+                if (this.currentShape.name == 'ShapeI' && this.currentShape.currentRotation == 3) {
+                    distanceFromCenter++;
+                }
 
-                    this.currentShape.setByPointerPosition(checkedCenterPosition);
-                    this.ghost.setPosition(this.currentShape.getPositions(), this.board.findDistanceToFall(this.currentShape.getPositions()));
 
-                    return;
-               }
+                //something screws up with rotation 3.
+                if (this.currentShape.currentRotation == 3 && pointerPosition == 9) {
+                    distanceFromCenter++;
+                }
+
+
+                var checkedCenterPosition: number = this.board.findValidPosition(distanceFromCenter, this.currentShape.getPositions());
+
+                this.currentShape.setByPointerPosition(checkedCenterPosition);
+                this.ghost.setPosition(this.currentShape.getPositions(), this.board.findDistanceToFall(this.currentShape.getPositions()));
+
+                return;
 
             }
-
-            this.usesScreenControls = false;
 
             var left: boolean = this.leftKey.isDown || this.leftKeyScreen.isDown;
             var right: boolean = this.rightKey.isDown || this.rightKeyScreen.isDown;
@@ -476,7 +476,7 @@ module Tetris {
             this.hud = new Hud(this, this.scoringManager, level, score, lines);
 
             //drop the first shape
-            this.createNewShape(true, 'ShapeI');
+            this.createNewShape(true);
 
             this.hud.setNextShape(this.shapeStack.getNextShape());
 

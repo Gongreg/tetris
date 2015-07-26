@@ -9,9 +9,11 @@ module Tetris {
     export class MenuState extends Kiwi.State
     {
 
+        private startKey: Kiwi.Input.Key;
+
         update()
         {
-            if (this.game.input.mouse.isDown) {
+            if (this.game.input.mouse.isDown || this.startKey.isDown) {
                 this.game.states.switchState('main');
             }
         }
@@ -36,6 +38,8 @@ module Tetris {
             this.addChild(new Kiwi.GameObjects.TextField(this, "Click on screen to play", Config.boardWidthInPixels / 2, 510, "#000", 25));
 
             this.getAllChildren().forEach((children: Kiwi.GameObjects.TextField) => children.textAlign = 'center');
+
+            this.startKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.SPACEBAR);
 
         }
     }

@@ -194,11 +194,6 @@ module Tetris {
                     newDistanceFromCenter = distanceFromCenter -  newPosition;
                 }
 
-                if (newPosition > 8) {
-                    console.log(newPosition);
-                }
-
-
                 if (newPosition > this.width - 1) {
                     newDistanceFromCenter = distanceFromCenter - (newPosition - (this.width - 1));
                 }
