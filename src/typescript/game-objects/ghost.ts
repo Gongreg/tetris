@@ -44,7 +44,7 @@ module Tetris {
         public setPosition(positions: Position[], lowerBy: number) {
             this.blocks.forEach((block, index) => {
 
-                block.setPosition(positions[index].x, positions[index].y + lowerBy);
+                block.setPosition(new Position(positions[index].x, positions[index].y + lowerBy));
             });
         }
     }

@@ -29,10 +29,11 @@ module Tetris {
             this.addChild(new Kiwi.GameObjects.TextField(this, "Soft drop - down key", Config.boardWidthInPixels / 2, 360, "#000", 16));
             this.addChild(new Kiwi.GameObjects.TextField(this, "Hard drop - space", Config.boardWidthInPixels / 2, 380, "#000", 16));
             this.addChild(new Kiwi.GameObjects.TextField(this, "Hold - shift", Config.boardWidthInPixels / 2, 400, "#000", 16));
-            this.addChild(new Kiwi.GameObjects.TextField(this, "On mobile you can also play", Config.boardWidthInPixels / 2, 440, "#000", 20));
+            this.addChild(new Kiwi.GameObjects.TextField(this, "On mobile you can play", Config.boardWidthInPixels / 2, 440, "#000", 20));
             this.addChild(new Kiwi.GameObjects.TextField(this, "with on screen buttons", Config.boardWidthInPixels / 2, 460, "#000", 20));
+            this.addChild(new Kiwi.GameObjects.TextField(this, "or by dragging on screen", Config.boardWidthInPixels / 2, 480, "#000", 20));
 
-            this.addChild(new Kiwi.GameObjects.TextField(this, "Click on screen to play", Config.boardWidthInPixels / 2, 490, "#000", 25));
+            this.addChild(new Kiwi.GameObjects.TextField(this, "Click on screen to play", Config.boardWidthInPixels / 2, 510, "#000", 25));
 
             this.getAllChildren().forEach((children: Kiwi.GameObjects.TextField) => children.textAlign = 'center');
 

@@ -31,6 +31,7 @@ module Tetris {
 
         private holdKey: Kiwi.Input.Key;
         private holdKeyIsDown: boolean = false;
+        private holdSprite: Kiwi.GameObjects.Sprite;
         private canHold: boolean = true;
 
         //Moving to left and right
@@ -60,6 +61,11 @@ module Tetris {
         private board: Board;
         private hud: Hud;
         private scoringManager: ScoringManager;
+
+        private boardSprite: Kiwi.GameObjects.Sprite;
+        private lastMousePosition: number = -1;
+        private usesScreenControls = false;
+
 
         private animationsStarted: boolean = false;
 
@@ -92,6 +98,34 @@ module Tetris {
         }
 
         moveControls() {
+
+            if (this.boardSprite.input.withinBounds) {
+                this.usesScreenControls = true;
+                var pointerPosition: number = Math.trunc((this.game.input.x - Config.offsetX - Config.borderWidth) / (Config.tileSize - 1));
+
+                if (this.lastMousePosition !== pointerPosition) {
+
+                    var distanceFromCenter = Math.round(pointerPosition - this.currentShape.center.x) - 1;
+
+                    //something screws up with rotation on I shape.
+                    if (this.currentShape.currentRotation == 3) {
+                        distanceFromCenter++;
+                    }
+
+
+                    var checkedCenterPosition: number = this.board.findValidPosition(distanceFromCenter, this.currentShape.getPositions());
+
+                    this.lastMousePosition = pointerPosition;
+
+                    this.currentShape.setByPointerPosition(checkedCenterPosition);
+                    this.ghost.setPosition(this.currentShape.getPositions(), this.board.findDistanceToFall(this.currentShape.getPositions()));
+
+                    return;
+               }
+
+            }
+
+            this.usesScreenControls = false;
 
             var left: boolean = this.leftKey.isDown || this.leftKeyScreen.isDown;
             var right: boolean = this.rightKey.isDown || this.rightKeyScreen.isDown;
@@ -191,7 +225,9 @@ module Tetris {
 
             if (rowsCleared) {
                 this.animationsStarted = true;
-                setTimeout(() => this.afterShapeLanded(), Config.animationTime + 10);
+                this.game.time.clock.setTimeout(() => {
+                    this.afterShapeLanded();
+                }, Config.animationTime, this);
             } else {
                 this.afterShapeLanded();
             }
@@ -205,7 +241,7 @@ module Tetris {
                 this.rotationDirection = Direction.Left;
             } else if (this.rotateClockwiseKey.isDown || this.rotateClockwiseScreen.isDown) {
                 this.rotationDirection = Direction.Right;
-            } else if (this.rotateBothKey.isDown || this.rotateBothScreen.isDown) {
+            } else if (this.rotateBothKey.isDown || this.rotateBothScreen.isDown || this.boardSprite.input.isDown) {
                 this.rotationDirection = Direction.Up;
             }
 
@@ -227,7 +263,7 @@ module Tetris {
             //reset rotation controls
             if ((this.rotationDirection == Direction.Right && (this.rotateClockwiseKey.isUp && this.rotateClockwiseScreen.isUp))
                 || (this.rotationDirection == Direction.Left && (this.rotateCounterClockwiseKey.isUp && this.rotateCounterClockwiseScreen.isUp))
-                || (this.rotationDirection == Direction.Up && (this.rotateBothKey.isUp && this.rotateBothScreen.isUp))
+                || (this.rotationDirection == Direction.Up && (this.rotateBothKey.isUp && this.rotateBothScreen.isUp && this.boardSprite.input.isUp))
             ) {
                 this.rotateKeyIsDown = false;
                 this.rotationDirection = 0;
@@ -261,7 +297,7 @@ module Tetris {
         }
 
         holdControls() {
-            if (this.holdKey.isDown && !this.holdKeyIsDown && this.canHold) {
+            if ((this.holdKey.isDown || this.holdSprite.input.isDown) && !this.holdKeyIsDown && this.canHold) {
                 this.holdKeyIsDown = true;
 
                 var heldShapeName = this.heldShape ? this.heldShape : '';
@@ -281,7 +317,7 @@ module Tetris {
                 this.canHold = false;
             }
 
-            if (this.holdKey.isUp && this.holdKeyIsDown) {
+            if (this.holdKey.isUp && this.holdSprite.input.isUp && this.holdKeyIsDown) {
                 this.holdKeyIsDown = false;
             }
         }
@@ -290,6 +326,10 @@ module Tetris {
         update()
         {
             super.update();
+
+            if (this.animationsStarted) {
+                return;
+            }
 
             this.moveControls();
 
@@ -361,7 +401,7 @@ module Tetris {
             this.rotateCounterClockwiseScreen.scaleY = 0.6;
             this.addChild(this.rotateCounterClockwiseScreen);
 
-            this.hardDropScreen = new Kiwi.Plugins.GameObjects.TouchButton(this, this.textures['controlButton'], 350, Config.boardHeightInPixels - 30);
+            this.hardDropScreen = new Kiwi.Plugins.GameObjects.TouchButton(this, this.textures['controlButton'], 330, 460);
             this.hardDropScreen.scaleX = 0.6;
             this.hardDropScreen.scaleY = 0.6;
             this.addChild(this.hardDropScreen);
@@ -396,8 +436,9 @@ module Tetris {
             var lines = new Kiwi.GameObjects.TextField(this, "0", Config.boardWidthInPixels, 135, "#000", 24);
             this.addChild(lines);
 
-            var boardTiles = new Kiwi.GameObjects.StaticImage(this, this.textures.board, Config.offsetX + Config.borderWidth, Config.borderHeight);
-            this.addChild(boardTiles);
+            this.boardSprite = new Kiwi.GameObjects.Sprite(this, this.textures.board, Config.offsetX + Config.borderWidth, Config.borderHeight);
+            this.boardSprite.input.enabled = true;
+            this.addChild(this.boardSprite);
 
             var borders = new Kiwi.GameObjects.StaticImage(this, this.textures.borders, Config.offsetX, 0);
             this.addChild(borders);
@@ -413,10 +454,11 @@ module Tetris {
             var heldShapeText = new Kiwi.GameObjects.TextField(this, "Hold", Config.boardWidthInPixels, 320, "#000", 24);
             this.addChild(heldShapeText);
 
-            var heldShapeBorders = new Kiwi.GameObjects.StaticImage(this, this.textures.hudBorders, Config.boardWidthInPixels + 20, 385);
-            heldShapeBorders.scaleX = 2.5;
-            heldShapeBorders.scaleY = 3.5;
-            this.addChild(heldShapeBorders);
+            this.holdSprite = new Kiwi.GameObjects.Sprite(this, this.textures.hudBorders, Config.boardWidthInPixels + 20, 385);
+            this.holdSprite.scaleX = 2.5;
+            this.holdSprite.scaleY = 3.5;
+            this.holdSprite.input.enabled = true;
+            this.addChild(this.holdSprite);
 
             //move timer for limiting move amount
             this.moveTimer = this.game.time.clock.createTimer('move', Config.moveTimerRate, 0);
@@ -426,7 +468,7 @@ module Tetris {
             this.fallTimer = this.game.time.clock.createTimer('fall', 0.5, 0);
             this.fallTimer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP, this.fallDown, this);
 
-            this.board = new Board();
+            this.board = new Board(this);
 
             this.shapeStack = new Shapes.ShapeStack(this);
 
@@ -434,7 +476,7 @@ module Tetris {
             this.hud = new Hud(this, this.scoringManager, level, score, lines);
 
             //drop the first shape
-            this.createNewShape(true);
+            this.createNewShape(true, 'ShapeI');
 
             this.hud.setNextShape(this.shapeStack.getNextShape());
 

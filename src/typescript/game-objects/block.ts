@@ -48,14 +48,14 @@ module Tetris {
 
         }
 
-        public setPosition(x:number, y:number)
+        public setPosition(position: Position)
         {
 
-            var xDiff: number = x - this.x;
-            var yDiff: number = y - this.y;
+            var xDiff: number = position.x - this.x;
+            var yDiff: number = position.y - this.y;
 
-            this.x = x;
-            this.y = y;
+            this.x = position.x;
+            this.y = position.y;
 
             if (this.sprite) {
                 this.sprite.transform.x += xDiff * (this.size - 1);

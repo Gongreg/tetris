@@ -26,7 +26,7 @@ module Tetris {
             ];
 
             //status for rotation
-            protected currentRotation: number = 0;
+            public currentRotation: number = 0;
             protected currentTest: number = 0;
 
             protected nextPositions: Position[] = [];
@@ -83,7 +83,6 @@ module Tetris {
                 });
             }
 
-
             public fall(amountOfTiles: number = 1) {
                 this.blocks.forEach((block) => {
                     if (block == this.center) {
@@ -97,7 +96,20 @@ module Tetris {
                 return this;
             }
 
-            move(side: number) {
+            public setByPointerPosition(distanceFromCenter: number) {
+                this.blocks.forEach((block) => {
+                    if (block == this.center) {
+                        return true;
+                    }
+                    block.setPosition(new Position(block.x + distanceFromCenter, block.y));
+                });
+
+                this.center.setPosition(new Position(this.center.x + distanceFromCenter, this.center.y));
+
+                return this;
+            }
+
+            public move(side: number) {
                 this.blocks.forEach((block) => {
                     if (block == this.center) {
                         return true;
@@ -163,7 +175,7 @@ module Tetris {
                     this.getNextRotation(1);
                 }
 
-                this.center.setPosition(this.nextCenter.x, this.nextCenter.y);
+                this.center.setPosition(new Position(this.nextCenter.x, this.nextCenter.y));
 
                 this.blocks.forEach((block, index) => {
 
@@ -172,7 +184,7 @@ module Tetris {
                         return true;
                     }
 
-                    block.setPosition(this.nextPositions[index].x, this.nextPositions[index].y);
+                    block.setPosition(new Position(this.nextPositions[index].x, this.nextPositions[index].y));
 
                 });
 

@@ -19,7 +19,10 @@ module Tetris {
 
         private highestPositions: Position[] = [];
 
-        constructor() {
+        private state: Kiwi.State;
+
+        constructor(state: Kiwi.State) {
+            this.state = state;
             for (var i:number = 0; i < this.height; i++) {
                 this.blocks[i] = [];
             }
@@ -96,13 +99,12 @@ module Tetris {
             if (rowsToClear.length > 0) {
                 this.clearRows(rowsToClear);
 
-                setTimeout(() => {
+                this.state.game.time.clock.setTimeout(() => {
                     //after clearing the rows, make other blocks fall down
                     this.fallBlocks(rowsToClear);
-
                     //refresh highest positions because some rows can get empty or some gaps can happen
                     this.refreshHighestPositions();
-                }, Config.animationTime + 5);
+                }, Config.animationTime, this);
 
             }
 
@@ -160,7 +162,7 @@ module Tetris {
                 //first get all rows which need to be checked, reverse them (so we wouldnt overwrite blocks in board), then get all blocks in them and do make them go down
                 blocksToFall.forEach((block) => {
                     this.setBlocks([block], BlockStatus.Empty);
-                    block.setPosition(block.x, block.y + lowerBy);
+                    block.setPosition(new Position(block.x, block.y + lowerBy));
                     this.setBlocks([block], BlockStatus.Taken);
                 });
             });
@@ -175,6 +177,34 @@ module Tetris {
 
                 return distance < rowsToFall ? distance : rowsToFall;
             }, this.height);
+        }
+
+        //find how much center position can move (used with pointer to check for walls)
+        public findValidPosition(distanceFromCenter: number, positions: Position[]) {
+
+            if (distanceFromCenter === 0) {
+                return 0;
+            }
+
+            return positions.reduce((previousElement, currentElement) => {
+                var newPosition = currentElement.x + distanceFromCenter;
+                var newDistanceFromCenter = distanceFromCenter;
+
+                if (newPosition < 0) {
+                    newDistanceFromCenter = distanceFromCenter -  newPosition;
+                }
+
+                if (newPosition > 8) {
+                    console.log(newPosition);
+                }
+
+
+                if (newPosition > this.width - 1) {
+                    newDistanceFromCenter = distanceFromCenter - (newPosition - (this.width - 1));
+                }
+
+                return Math.abs(newDistanceFromCenter) < Math.abs(previousElement) ? newDistanceFromCenter : previousElement;
+            }, distanceFromCenter);
         }
     }
 }
