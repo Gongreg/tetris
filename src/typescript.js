@@ -11,6 +11,7 @@ var Tetris;
         Config.boardWidth = 10;
         Config.boardWidthInPixels = Config.offsetX + Config.borderWidth * 2 + Config.boardWidth * Config.tileSize;
         Config.boardHeight = 22;
+        Config.boardHeightInPixels = Config.offsetY + Config.borderWidth * 2 + Config.boardHeight * Config.tileSize;
         Config.moveTimerRate = 0.1;
         Config.animationTime = 300;
         return Config;
@@ -416,7 +417,7 @@ var Tetris;
                     _this.fallBlocks(rowsToClear);
                     //refresh highest positions because some rows can get empty or some gaps can happen
                     _this.refreshHighestPositions();
-                }, Tetris.Config.animationTime);
+                }, Tetris.Config.animationTime + 5);
             }
             return rowsToClear.length;
         };
@@ -662,10 +663,13 @@ var Tetris;
             this.blocks.forEach(function (color) { return _this.addImage('block-' + color, 'assets/img/block-' + color + '.png'); });
             this.addImage('block-ghost', 'assets/img/block-ghost.png');
             this.addAudio('blockFallSound', 'assets/sound/block-fall.mp3');
+            this.addAudio('rowClearSound', 'assets/sound/row-clear.mp3');
+            this.addSpriteSheet('controlArrow', 'assets/img/control-arrow.png', 51, 73);
+            this.addSpriteSheet('controlButton', 'assets/img/control-button.png', 100, 100);
         };
         MainState.prototype.moveControls = function () {
-            var left = this.leftKey.isDown;
-            var right = this.rightKey.isDown;
+            var left = this.leftKey.isDown || this.leftKeyScreen.isDown;
+            var right = this.rightKey.isDown || this.rightKeyScreen.isDown;
             var direction = right ? Tetris.Direction.Right : Tetris.Direction.Left;
             if ((left || right) && !this.moveKeyIsDown && this.board.emptyDirection(this.currentShape.getBlocks(), direction)) {
                 this.moveKeyIsDown = true;
@@ -734,8 +738,9 @@ var Tetris;
             var rowsCleared = this.board.checkRows(this.currentShape.getBlocks());
             this.scoringManager.addRowsCleared(rowsCleared);
             if (rowsCleared) {
+                this.rowClearSound.play();
                 this.animationsStarted = true;
-                setTimeout(function () { return _this.afterShapeLanded(); }, Tetris.Config.animationTime);
+                setTimeout(function () { return _this.afterShapeLanded(); }, Tetris.Config.animationTime + 10);
             }
             else {
                 this.afterShapeLanded();
@@ -743,13 +748,13 @@ var Tetris;
         };
         MainState.prototype.rotationControls = function () {
             //rotation controls
-            if (this.rotateCounterClockwiseKey.isDown) {
-                this.rotationDirection = Tetris.Direction.Right;
-            }
-            else if (this.rotateClockwiseKey.isDown) {
+            if (this.rotateCounterClockwiseKey.isDown || this.rotateCounterClockwiseScreen.isDown) {
                 this.rotationDirection = Tetris.Direction.Left;
             }
-            else if (this.rotateBothKey.isDown) {
+            else if (this.rotateClockwiseKey.isDown || this.rotateClockwiseScreen.isDown) {
+                this.rotationDirection = Tetris.Direction.Right;
+            }
+            else if (this.rotateBothKey.isDown || this.rotateBothScreen.isDown) {
                 this.rotationDirection = Tetris.Direction.Up;
             }
             if (this.rotationDirection !== 0 && !this.rotateKeyIsDown) {
@@ -765,27 +770,27 @@ var Tetris;
                 }
             }
             //reset rotation controls
-            if ((this.rotationDirection == Tetris.Direction.Left && this.rotateClockwiseKey.isUp)
-                || (this.rotationDirection == Tetris.Direction.Right && this.rotateCounterClockwiseKey.isUp)
-                || (this.rotationDirection == Tetris.Direction.Up && this.rotateBothKey.isUp)) {
+            if ((this.rotationDirection == Tetris.Direction.Right && (this.rotateClockwiseKey.isUp && this.rotateClockwiseScreen.isUp))
+                || (this.rotationDirection == Tetris.Direction.Left && (this.rotateCounterClockwiseKey.isUp && this.rotateCounterClockwiseScreen.isUp))
+                || (this.rotationDirection == Tetris.Direction.Up && (this.rotateBothKey.isUp && this.rotateBothScreen.isUp))) {
                 this.rotateKeyIsDown = false;
                 this.rotationDirection = 0;
             }
         };
         MainState.prototype.dropDownControls = function () {
-            if (this.hardDropKey.isDown && !this.dropping) {
+            if ((this.hardDropKey.isDown || this.hardDropScreen.isDown) && !this.dropping) {
                 this.dropping = true;
                 var amountOfRows = this.board.findDistanceToFall(this.currentShape.getPositions());
                 this.fallDown(amountOfRows, true);
                 this.scoringManager.addHardDrop(amountOfRows);
             }
-            if (this.hardDropKey.isUp && this.dropping) {
+            if (this.hardDropKey.isUp && this.hardDropScreen.isUp && this.dropping) {
                 this.dropping = false;
             }
         };
         MainState.prototype.fallTimerControls = function () {
             this.fallTimer.delay = this.scoringManager.getFallingDelay();
-            if (this.softDropKey.isDown) {
+            if (this.softDropKey.isDown || this.softDropScreen.isDown) {
                 this.fallTimer.delay = 0.01;
             }
         };
@@ -835,12 +840,41 @@ var Tetris;
             var _this = this;
             _super.prototype.create.call(this);
             //controls
+            this.rotateBothScreen = new Kiwi.Plugins.GameObjects.TouchButton(this, this.textures['controlArrow'], 95, Tetris.Config.boardHeightInPixels - 30);
+            this.rotateBothScreen.rotPointX = this.rotateBothScreen.width * 0.5;
+            this.rotateBothScreen.rotPointY = this.rotateBothScreen.height * 0.5;
+            this.rotateBothScreen.rotation = Math.PI / 2;
+            this.addChild(this.rotateBothScreen);
+            this.leftKeyScreen = new Kiwi.Plugins.GameObjects.TouchButton(this, this.textures['controlArrow'], 30, Tetris.Config.boardHeightInPixels + 35);
+            this.addChild(this.leftKeyScreen);
+            this.rightKeyScreen = new Kiwi.Plugins.GameObjects.TouchButton(this, this.textures['controlArrow'], 160, Tetris.Config.boardHeightInPixels + 35);
+            this.rightKeyScreen.rotPointX = this.rightKeyScreen.width * 0.5;
+            this.rightKeyScreen.rotPointY = this.rightKeyScreen.height * 0.5;
+            this.rightKeyScreen.rotation = Math.PI;
+            this.addChild(this.rightKeyScreen);
+            this.softDropScreen = new Kiwi.Plugins.GameObjects.TouchButton(this, this.textures['controlArrow'], 95, Tetris.Config.boardHeightInPixels + 100);
+            this.softDropScreen.rotPointX = this.softDropScreen.width * 0.5;
+            this.softDropScreen.rotPointY = this.softDropScreen.height * 0.5;
+            this.softDropScreen.rotation = -Math.PI / 2;
+            this.addChild(this.softDropScreen);
+            this.rotateClockwiseScreen = new Kiwi.Plugins.GameObjects.TouchButton(this, this.textures['controlButton'], 210, Tetris.Config.boardHeightInPixels - 30);
+            this.rotateClockwiseScreen.scaleX = 0.6;
+            this.rotateClockwiseScreen.scaleY = 0.6;
+            this.addChild(this.rotateClockwiseScreen);
+            this.rotateCounterClockwiseScreen = new Kiwi.Plugins.GameObjects.TouchButton(this, this.textures['controlButton'], 280, Tetris.Config.boardHeightInPixels - 30);
+            this.rotateCounterClockwiseScreen.scaleX = 0.6;
+            this.rotateCounterClockwiseScreen.scaleY = 0.6;
+            this.addChild(this.rotateCounterClockwiseScreen);
+            this.hardDropScreen = new Kiwi.Plugins.GameObjects.TouchButton(this, this.textures['controlButton'], 350, Tetris.Config.boardHeightInPixels - 30);
+            this.hardDropScreen.scaleX = 0.6;
+            this.hardDropScreen.scaleY = 0.6;
+            this.addChild(this.hardDropScreen);
             this.leftKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.LEFT);
             this.rightKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.RIGHT);
-            this.softDropKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.DOWN);
             this.rotateBothKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.UP);
             this.rotateClockwiseKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.Z);
             this.rotateCounterClockwiseKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.X);
+            this.softDropKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.DOWN);
             this.hardDropKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.SPACEBAR);
             this.holdKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.SHIFT);
             //board sprites
@@ -874,6 +908,7 @@ var Tetris;
             heldShapeBorders.scaleY = 3.5;
             this.addChild(heldShapeBorders);
             this.blockFallSound = new Kiwi.Sound.Audio(this.game, 'blockFallSound', 1, false);
+            this.rowClearSound = new Kiwi.Sound.Audio(this.game, 'rowClearSound', 1, false);
             //move timer for limiting move amount
             this.moveTimer = this.game.time.clock.createTimer('move', Tetris.Config.moveTimerRate, 0);
             this.moveTimer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP, function () { _this.moveKeyIsDown = false; }, this);
@@ -945,9 +980,11 @@ var Tetris;
     var gameOptions = {
         renderer: Kiwi.RENDERER_CANVAS,
         width: 430,
-        height: 600
+        height: 800,
+        plugins: ['TouchButton']
     };
     var game = new Kiwi.Game('content', 'Tetris', null, gameOptions);
+    var configState = new Tetris.GameOverState('configState');
     var mainState = new Tetris.MainState('main');
     var gameOverState = new Tetris.GameOverState('gameOver');
     game.states.addState(mainState);

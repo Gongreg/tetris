@@ -8,6 +8,7 @@ module Tetris {
         static boardWidth: number = 10;
         static boardWidthInPixels: number = Config.offsetX + Config.borderWidth * 2 + Config.boardWidth * Config.tileSize;
         static boardHeight: number = 22;
+        static boardHeightInPixels: number = Config.offsetY + Config.borderWidth * 2 + Config.boardHeight * Config.tileSize;
         static moveTimerRate = 0.1;
         static animationTime = 300;
     }

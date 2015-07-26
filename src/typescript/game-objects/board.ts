@@ -102,10 +102,9 @@ module Tetris {
 
                     //refresh highest positions because some rows can get empty or some gaps can happen
                     this.refreshHighestPositions();
-                }, Config.animationTime);
+                }, Config.animationTime + 5);
 
             }
-
 
             return rowsToClear.length;
         }

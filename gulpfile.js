@@ -11,6 +11,7 @@ var source = require('vinyl-source-stream');
 
 var scripts = [
     '!src/typescript/**/*.d.ts',
+    '!src/typescript/**/*.ts.map',
     'src/typescript/**/*.ts'
 ];
 
@@ -32,7 +33,7 @@ function bundle(b){
         .pipe(livereload());
 }
 
-gulp.task('browserify', ['watchTypescript'], function(){
+gulp.task('browserify', function(){
     var b = watchify(browserify({
         entries: ['./src/typescript.js'],
         debug: true
@@ -54,7 +55,7 @@ gulp.task('watchTypescript', ['compileTypescript'], function () {
     }));
 });
 
-gulp.task('watch', ['compileTypescript', 'watchTypescript', 'browserify', 'webserver'], function(){
+gulp.task('watch', ['browserify', 'webserver'], function(){
     livereload.listen();
 });
 

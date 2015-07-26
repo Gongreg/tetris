@@ -16,11 +16,13 @@ module Tetris {
 	var gameOptions = {
 		renderer: Kiwi.RENDERER_CANVAS,
 		width: 430,
-		height: 600
+		height: 800,
+		plugins: ['TouchButton']
 	};
 
 	var game = new Kiwi.Game('content', 'Tetris', null, gameOptions);
 
+	var configState = new Tetris.GameOverState('configState');
 	var mainState = new Tetris.MainState('main');
 	var gameOverState = new Tetris.GameOverState('gameOver');
 
