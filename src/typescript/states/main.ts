@@ -61,9 +61,6 @@ module Tetris {
         private hud: Hud;
         private scoringManager: ScoringManager;
 
-        private blockFallSound: Kiwi.Sound.Audio;
-        private rowClearSound: Kiwi.Sound.Audio;
-
         private animationsStarted: boolean = false;
 
         //block colors for sprite loading
@@ -88,9 +85,6 @@ module Tetris {
             this.blocks.forEach(color => this.addImage('block-'+ color, 'assets/img/block-'+ color +'.png'));
 
             this.addImage('block-ghost', 'assets/img/block-ghost.png');
-
-            this.addAudio('blockFallSound', 'assets/sound/block-fall.mp3');
-            this.addAudio('rowClearSound', 'assets/sound/row-clear.mp3');
 
             this.addSpriteSheet('controlArrow', 'assets/img/control-arrow.png', 51,73);
             this.addSpriteSheet('controlButton', 'assets/img/control-button.png', 100,100);
@@ -185,9 +179,6 @@ module Tetris {
                 }
 
             }
-
-            this.blockFallSound.play();
-
             //if shape can't fall down, set blocks into board and create new shape unless it is gg
 
             //set blocks as used, since we are creating new shape
@@ -199,7 +190,6 @@ module Tetris {
             this.scoringManager.addRowsCleared(rowsCleared);
 
             if (rowsCleared) {
-                this.rowClearSound.play();
                 this.animationsStarted = true;
                 setTimeout(() => this.afterShapeLanded(), Config.animationTime + 10);
             } else {
@@ -427,10 +417,6 @@ module Tetris {
             heldShapeBorders.scaleX = 2.5;
             heldShapeBorders.scaleY = 3.5;
             this.addChild(heldShapeBorders);
-
-            this.blockFallSound = new Kiwi.Sound.Audio(this.game, 'blockFallSound', 1, false);
-            this.rowClearSound = new Kiwi.Sound.Audio(this.game, 'rowClearSound', 1, false);
-
 
             //move timer for limiting move amount
             this.moveTimer = this.game.time.clock.createTimer('move', Config.moveTimerRate, 0);

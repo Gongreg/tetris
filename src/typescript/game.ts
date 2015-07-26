@@ -1,4 +1,5 @@
 /// <reference path="lib/kiwi.d.ts" />
+/// <reference path="states/menu.ts" />
 /// <reference path="states/main.ts" />
 /// <reference path="states/game-over.ts" />
 
@@ -22,11 +23,12 @@ module Tetris {
 
 	var game = new Kiwi.Game('content', 'Tetris', null, gameOptions);
 
-	var configState = new Tetris.GameOverState('configState');
+	var menuState = new Tetris.MenuState('menu');
 	var mainState = new Tetris.MainState('main');
 	var gameOverState = new Tetris.GameOverState('gameOver');
 
+	game.states.addState(menuState);
 	game.states.addState(mainState);
 	game.states.addState(gameOverState);
-	game.states.switchState('main');
+	game.states.switchState('menu');
 }

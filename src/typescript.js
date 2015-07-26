@@ -33,6 +33,49 @@ var Tetris;
     })(Tetris.Direction || (Tetris.Direction = {}));
     var Direction = Tetris.Direction;
 })(Tetris || (Tetris = {}));
+/**
+ * Created by Gytis on 2015-04-20.
+ */
+/// <reference path="../lib/kiwi.d.ts" />
+/// <reference path="../config.ts" />
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var Tetris;
+(function (Tetris) {
+    var MenuState = (function (_super) {
+        __extends(MenuState, _super);
+        function MenuState() {
+            _super.apply(this, arguments);
+        }
+        MenuState.prototype.update = function () {
+            if (this.game.input.mouse.isDown) {
+                this.game.states.switchState('main');
+            }
+        };
+        MenuState.prototype.create = function () {
+            _super.prototype.create.call(this);
+            this.addChild(new Kiwi.GameObjects.TextField(this, "Tetris clone", Tetris.Config.boardWidthInPixels / 2, 200, "#000", 30));
+            this.addChild(new Kiwi.GameObjects.TextField(this, "Default controls for the game are:", Tetris.Config.boardWidthInPixels / 2, 250, "#000", 20));
+            this.addChild(new Kiwi.GameObjects.TextField(this, "Move - arrow keys", Tetris.Config.boardWidthInPixels / 2, 280, "#000", 16));
+            this.addChild(new Kiwi.GameObjects.TextField(this, "Rotate counterclockwise - z", Tetris.Config.boardWidthInPixels / 2, 300, "#000", 16));
+            this.addChild(new Kiwi.GameObjects.TextField(this, "Rotate clockwise - x", Tetris.Config.boardWidthInPixels / 2, 320, "#000", 16));
+            this.addChild(new Kiwi.GameObjects.TextField(this, "Rotate both ways - up arrow", Tetris.Config.boardWidthInPixels / 2, 340, "#000", 16));
+            this.addChild(new Kiwi.GameObjects.TextField(this, "Soft drop - down key", Tetris.Config.boardWidthInPixels / 2, 360, "#000", 16));
+            this.addChild(new Kiwi.GameObjects.TextField(this, "Hard drop - space", Tetris.Config.boardWidthInPixels / 2, 380, "#000", 16));
+            this.addChild(new Kiwi.GameObjects.TextField(this, "Hold - shift", Tetris.Config.boardWidthInPixels / 2, 400, "#000", 16));
+            this.addChild(new Kiwi.GameObjects.TextField(this, "On mobile you can also play", Tetris.Config.boardWidthInPixels / 2, 440, "#000", 20));
+            this.addChild(new Kiwi.GameObjects.TextField(this, "with on screen buttons", Tetris.Config.boardWidthInPixels / 2, 460, "#000", 20));
+            this.addChild(new Kiwi.GameObjects.TextField(this, "Click on screen to play", Tetris.Config.boardWidthInPixels / 2, 490, "#000", 25));
+            this.getAllChildren().forEach(function (children) { return children.textAlign = 'center'; });
+        };
+        return MenuState;
+    })(Kiwi.State);
+    Tetris.MenuState = MenuState;
+})(Tetris || (Tetris = {}));
 var Tetris;
 (function (Tetris) {
     var Position = (function () {
@@ -622,12 +665,6 @@ var Tetris;
 /// <reference path="../config.ts" />
 /// <reference path="../hud.ts" />
 /// <reference path="../scoring-manager.ts" />
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
 var Tetris;
 (function (Tetris) {
     var MainState = (function (_super) {
@@ -965,6 +1002,7 @@ var Tetris;
     Tetris.GameOverState = GameOverState;
 })(Tetris || (Tetris = {}));
 /// <reference path="lib/kiwi.d.ts" />
+/// <reference path="states/menu.ts" />
 /// <reference path="states/main.ts" />
 /// <reference path="states/game-over.ts" />
 /**
@@ -984,12 +1022,13 @@ var Tetris;
         plugins: ['TouchButton']
     };
     var game = new Kiwi.Game('content', 'Tetris', null, gameOptions);
-    var configState = new Tetris.GameOverState('configState');
+    var menuState = new Tetris.MenuState('menu');
     var mainState = new Tetris.MainState('main');
     var gameOverState = new Tetris.GameOverState('gameOver');
+    game.states.addState(menuState);
     game.states.addState(mainState);
     game.states.addState(gameOverState);
-    game.states.switchState('main');
+    game.states.switchState('menu');
 })(Tetris || (Tetris = {}));
 /**
  * Created by Gytis on 2015-05-21.
